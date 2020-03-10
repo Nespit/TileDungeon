@@ -91,7 +91,8 @@ public class GridManager : MonoBehaviour
         
         foreach(Transform t in transform)
         {
-             grid.tiles[Mathf.RoundToInt(t.position.x), Mathf.RoundToInt(t.position.z)].gameObject = t.gameObject;
+             if(transform.gameObject.tag == "Tile")
+                grid.tiles[Mathf.RoundToInt(t.position.x), Mathf.RoundToInt(t.position.z)].gameObject = t.gameObject;
         }
 
         return  grid;

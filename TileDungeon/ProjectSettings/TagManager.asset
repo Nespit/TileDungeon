@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Tile
   - Character
+  - Door
+  - Key
+  - Coin
   layers:
   - Default
   - TransparentFX
@@ -17,7 +20,7 @@ TagManager:
   - 
   - PostProcessing
   - Editor
-  - 
+  - Tiles
   - 
   - 
   - 
