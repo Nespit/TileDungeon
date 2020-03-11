@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CharacterScript : MonoBehaviour
 {
-    //Doors blocking without key, fix blocking issue, key, coins, display points
+    //Fix camera, Input mouse, Mobile build, Input touch, Fix item pickup, Add enemy that block movement (no AI) and combat.
     
     Vector3 currentDirection;
     Vector3 moveDestination, nextPos;
@@ -20,7 +20,8 @@ public class CharacterScript : MonoBehaviour
     int coinCount;
     public int coinsTilWin;
     public float movementSpeed = 2f;
-    public float rotationSpeed = 6f;
+    float rotationSpeed;
+    public float rotation90dSec = 0.25f;
     public Text coinCounter;
     public Text winAnnouncement;
 
@@ -54,19 +55,19 @@ public class CharacterScript : MonoBehaviour
     }
     void LookTowards(Quaternion targetRotation)
     {
-       t += Time.deltaTime;
+       t = Mathf.Clamp01(t + Time.deltaTime * rotationSpeed);
     
-       transform.rotation = Quaternion.Lerp(initialRotation, targetRotation, t * rotationSpeed);
+       transform.rotation = Quaternion.Lerp(initialRotation, targetRotation, t);
     }
 
     IEnumerator Movement()
     {
         yield return m_movementCondition;
         
-        if((t*rotationSpeed) < 1) //transform.rotation != targetRotation
+        if(t < 1)
         {
             LookTowards(targetRotation);
-            //Debug.Log("Trying to look from " + transform.rotation + " to " + targetRotation + " while t is " + t + " and the original rotation was " + initialRotation);
+            Debug.Log("Trying to look from " + transform.rotation + " to " + targetRotation + " while t is " + t + " and the original rotation was " + initialRotation);
         }
             
         else if (transform.position != moveDestination)
@@ -145,7 +146,7 @@ public class CharacterScript : MonoBehaviour
             
             if(AttemptMove(target))
             {
-                t = 0;
+                t = 1;
                 initialRotation = transform.rotation;
                 moveDestination = target;
                 SetRotationTowardsTarget(target);
@@ -159,6 +160,7 @@ public class CharacterScript : MonoBehaviour
             if(AttemptMove(target))
             {
                 t = 0;
+                rotationSpeed = 1 / rotation90dSec;
                 initialRotation = transform.rotation;
                 moveDestination = target;
                 SetRotationTowardsTarget(target);
@@ -172,6 +174,7 @@ public class CharacterScript : MonoBehaviour
             if(AttemptMove(target))
             {
                 t = 0;
+                rotationSpeed = 2 / rotation90dSec;
                 initialRotation = transform.rotation;
                 moveDestination = target;
                 SetRotationTowardsTarget(target);
@@ -185,6 +188,7 @@ public class CharacterScript : MonoBehaviour
             if(AttemptMove(target))
             {
                 t = 0;
+                rotationSpeed = 2 / rotation90dSec;
                 initialRotation = transform.rotation;
                 moveDestination = target;
                 SetRotationTowardsTarget(target);
