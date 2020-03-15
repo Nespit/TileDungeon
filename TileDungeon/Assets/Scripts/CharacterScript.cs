@@ -14,13 +14,13 @@ public class CharacterScript : MonoBehaviour
     int layerMaskTile;
     WaitUntil m_movementCondition;
     Coroutine m_movement;
-    float t = 0;
     Ray myRay;
     public bool hasKey;
     int coinCount;
     public int coinsTilWin;
     public float movementSpeed = 2f;
     float rotationSpeed;
+    float t = 0;
     public float rotation90dSec = 0.25f;
     public Text coinCounter;
     public Text winAnnouncement;
