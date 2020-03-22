@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    Camera mainCamera;
+    public Camera mainCamera;
     public Transform target;
     Vector3 initialPos, targetPos, offset, velocity;
     WaitUntil m_cameraMovementCondition;

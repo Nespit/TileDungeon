@@ -8,7 +8,7 @@ public class CharacterScript : MonoBehaviour
     //Fix camera, Input mouse, Mobile build, Input touch, Fix item pickup, Add enemy that block movement (no AI) and combat.
     
     Vector3 currentDirection;
-    Vector3 moveDestination, nextPos;
+    Vector3 moveDestination, nextPos, offsetY;
     Quaternion targetRotation;
     Quaternion initialRotation;
     int layerMaskTile;
@@ -24,9 +24,7 @@ public class CharacterScript : MonoBehaviour
     public float rotation90dSec = 0.25f;
     public Text coinCounter;
     public Text winAnnouncement;
-
     bool move = false;
-
 
     void Start()
     {
@@ -35,12 +33,7 @@ public class CharacterScript : MonoBehaviour
         layerMaskTile = LayerMask.GetMask("Tiles");
         m_movementCondition = new WaitUntil(() => move == true);
         m_movement = StartCoroutine(Movement());
-    }
-
-    void Update()
-    {
-        CharacterInput();
-        Debug.DrawRay(myRay.origin, myRay.direction, Color.red);
+        offsetY = new Vector3(0, transform.position.y, 0);
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -67,7 +60,7 @@ public class CharacterScript : MonoBehaviour
         if(t < 1)
         {
             LookTowards(targetRotation);
-            Debug.Log("Trying to look from " + transform.rotation + " to " + targetRotation + " while t is " + t + " and the original rotation was " + initialRotation);
+            //Debug.Log("Trying to look from " + transform.rotation + " to " + targetRotation + " while t is " + t + " and the original rotation was " + initialRotation);
         }
             
         else if (transform.position != moveDestination)
@@ -83,18 +76,26 @@ public class CharacterScript : MonoBehaviour
 
     bool AttemptMove(Vector3 target)
     {
+        if(target.x < transform.position.x-1.49 ||
+           target.x > transform.position.x+1.49 ||
+           target.z < transform.position.z-1.49 ||
+           target.z > transform.position.z+1.49)
+        {
+            return false;
+        }
+
         myRay = new Ray(target, new Vector3(0,-1,0));
         RaycastHit hit;
 
         if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
         {
             if(hit.collider.tag == "Tile")
-            return CheckForInteractions(hit.collider.transform);
+            return CheckForTileInteractions(hit.collider.transform);
         }
         return false;
     }
 
-    bool CheckForInteractions(Transform tile)
+    bool CheckForTileInteractions(Transform tile)
     {
         foreach(Transform t in tile)
         {
@@ -111,16 +112,23 @@ public class CharacterScript : MonoBehaviour
                     return false;
                 }  
             }
-            if(t.tag == "Key")
+        }
+        return true;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+            Debug.Log("Collision");
+            if(collision.gameObject.tag == "Key")
             {
-                t.SetParent(null);
-                t.gameObject.SetActive(false);
+                collision.transform.SetParent(null);
+                collision.gameObject.SetActive(false);
                 hasKey = true;
             }
-            else if(t.tag == "Coin")
+            else if(collision.gameObject.tag == "Coin")
             {
-                t.SetParent(null);
-                t.gameObject.SetActive(false);
+                collision.transform.SetParent(null);
+                collision.gameObject.SetActive(false);
                 coinCount += 1;
                 coinCounter.text = coinCount.ToString();
 
@@ -129,71 +137,79 @@ public class CharacterScript : MonoBehaviour
                     winAnnouncement.transform.gameObject.SetActive(true);
                 }
             }
-        }
-        return true;
     }
 
-    void CharacterInput()
+    public void MoveForward()
     {
-        if(move)
+        Vector3 target = (transform.position+transform.forward); 
+        
+        if(AttemptMove(target))
         {
-            return;
+            t = 1;
+            initialRotation = transform.rotation;
+            moveDestination = target;
+            SetRotationTowardsTarget(target);
+            move = true;
         }
+    }
 
-        if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+    public void MoveBackwards()
+    {
+        Vector3 target = (transform.position-transform.forward); 
+        
+        if(AttemptMove(target))
         {
-            Vector3 target = (transform.position+transform.forward); 
-            
-            if(AttemptMove(target))
-            {
-                t = 1;
-                initialRotation = transform.rotation;
-                moveDestination = target;
-                SetRotationTowardsTarget(target);
-                move = true;
-            }
+            t = 0;
+            rotationSpeed = 1 / rotation90dSec;
+            initialRotation = transform.rotation;
+            moveDestination = target;
+            SetRotationTowardsTarget(target);
+            move = true;
         }
-        if(Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            Vector3 target = (transform.position-transform.forward); 
-            
-            if(AttemptMove(target))
-            {
-                t = 0;
-                rotationSpeed = 1 / rotation90dSec;
-                initialRotation = transform.rotation;
-                moveDestination = target;
-                SetRotationTowardsTarget(target);
-                move = true;
-            }
-        }
-        if(Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Vector3 target = (transform.position+transform.right); 
+    }
 
-            if(AttemptMove(target))
-            {
-                t = 0;
-                rotationSpeed = 2 / rotation90dSec;
-                initialRotation = transform.rotation;
-                moveDestination = target;
-                SetRotationTowardsTarget(target);
-                move = true;
-            }
-        }
-        if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Vector3 target = (transform.position-transform.right); 
+    public void MoveRight()
+    {
+        Vector3 target = (transform.position+transform.right); 
 
-            if(AttemptMove(target))
-            {
-                t = 0;
-                rotationSpeed = 2 / rotation90dSec;
-                initialRotation = transform.rotation;
-                moveDestination = target;
-                SetRotationTowardsTarget(target);
-                move = true;
-            }
-        }
+        if(AttemptMove(target))
+        {
+            t = 0;
+            rotationSpeed = 2 / rotation90dSec;
+            initialRotation = transform.rotation;
+            moveDestination = target;
+            SetRotationTowardsTarget(target);
+            move = true;
+        } 
+    }
+
+    public void MoveLeft()
+    {
+        Vector3 target = (transform.position-transform.right); 
+
+        if(AttemptMove(target))
+        {
+            t = 0;
+            rotationSpeed = 2 / rotation90dSec;
+            initialRotation = transform.rotation;
+            moveDestination = target;
+            SetRotationTowardsTarget(target);
+            move = true;
+        } 
+    }
+
+    public void MoveToLocation(Vector3 target)
+    {
+        target = target+offsetY;
+
+        if(AttemptMove(target))
+        {
+            t = 0;
+            rotationSpeed = 2 / rotation90dSec;
+            initialRotation = transform.rotation;
+            moveDestination = target;
+            SetRotationTowardsTarget(target);
+            move = true;
+        } 
     }
 }
