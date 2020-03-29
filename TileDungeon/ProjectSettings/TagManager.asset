@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Tile
-  - Character
   - Door
   - Key
   - Coin
   - Enemy
+  - InputManager
+  - PlayerCharacter
   layers:
   - Default
   - TransparentFX

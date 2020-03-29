@@ -13,21 +13,16 @@ public class InputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        character = GameObject.FindGameObjectWithTag("Character").GetComponent<CharacterScript>();
+        character = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
         gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
         cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();
         layerMaskTile = LayerMask.GetMask("Tiles");
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ProcessInput()
     {
         MouseClick();
-    }
-
-    void ProcessInput()
-    {
-
+        Touch();
     }
 
     void MouseClick()
@@ -45,5 +40,27 @@ public class InputManager : MonoBehaviour
                 }
             }
         }  
+    }
+
+    void Touch()
+    {
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            
+            if(touch.phase == TouchPhase.Ended)
+            {
+                RaycastHit hit;
+                myRay = cameraManager.mainCamera.ScreenPointToRay(touch.position); 
+            
+                if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+                {
+                    if(hit.collider.tag == "Tile")
+                    {
+                        character.MoveToLocation(hit.transform.position);
+                    }
+                }
+            } 
+        } 
     }
 }

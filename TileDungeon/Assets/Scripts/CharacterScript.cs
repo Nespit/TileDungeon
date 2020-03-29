@@ -13,7 +13,7 @@ public class CharacterScript : MonoBehaviour
     Quaternion initialRotation;
     int layerMaskTile;
     WaitUntil m_movementCondition;
-    Coroutine m_movement, m_attackAnimation;
+    public Coroutine m_movement, m_attackAnimation;
     Ray myRay;
     public bool hasKey;
     int coinCount;
@@ -27,19 +27,25 @@ public class CharacterScript : MonoBehaviour
     public float rotation90dSec = 0.25f;
     public Text coinCounter;
     public Text winAnnouncement;
-    bool move = false;
-    bool attack = false;
-    CharacterStats characterStats;
+    bool moving = false;
+    bool attacking = false;
+    public int maxHealth;
+    int currentHealth;
+    public int attackStrength;
+    public int defenseStrength;
+    CharacterCanvasController characterCanvas;
+
 
     void Start()
     {
         currentDirection = transform.position;
         targetRotation = transform.rotation;
         layerMaskTile = LayerMask.GetMask("Tiles");
-        m_movementCondition = new WaitUntil(() => move == true && attack == false);
-        m_movement = StartCoroutine(Movement());
+        m_movementCondition = new WaitUntil(() => moving == true && attacking == false);
         offsetY = new Vector3(0, transform.position.y, 0);
-        characterStats = new CharacterStats(100, 50, 0);
+        currentHealth = maxHealth;
+        characterCanvas = GetComponentInChildren<CharacterCanvasController>();
+        SetHealthbarFill();
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -59,14 +65,13 @@ public class CharacterScript : MonoBehaviour
        transform.rotation = Quaternion.Lerp(initialRotation, targetRotation, t0);
     }
 
-    IEnumerator Movement()
+    public IEnumerator Movement()
     {
         yield return m_movementCondition;
         
         if(t0 < 1)
         {
             LookTowards(targetRotation);
-            //Debug.Log("Trying to look from " + transform.rotation + " to " + targetRotation + " while t is " + t + " and the original rotation was " + initialRotation);
         }
             
         else if (transform.position != moveDestination)
@@ -75,12 +80,12 @@ public class CharacterScript : MonoBehaviour
         } 
         
         else
-            move = false;
+            moving = false;
 
         m_movement = StartCoroutine(Movement());
     }
 
-    IEnumerator AttackAnimation(EnemyScript enemy)
+    IEnumerator AttackAnimation(CharacterScript target, bool hitLanded = false)
     {   
         yield return null;
 
@@ -98,29 +103,35 @@ public class CharacterScript : MonoBehaviour
 
         else
         {
-            Debug.Log("It should go back");
+            if(!hitLanded)
+            {
+                int damage = attackStrength - target.defenseStrength;
+                target.currentHealth -= damage;
+                target.Attacked(damage);
+                hitLanded = true;
+
+                if(target.currentHealth <= 0)
+                {
+                    target.transform.SetParent(null);
+                    target.gameObject.SetActive(false);
+                }
+            }
+            
             t2 = Mathf.Clamp01(t2 - Time.deltaTime * attackSpeed);
             transform.position = Vector3.Lerp(initialPos, moveDestination, t2);
             
             if(t2 == 0)
             {
-                if(enemy.characterStats.health <= 0)
-                {
-                    enemy.transform.SetParent(null);
-                    enemy.gameObject.SetActive(false);
-                }
-
-                Debug.Log("It should end");
                 t0 = 0;
                 t1 = 0;
-                attack = false;
+                attacking = false;
                 StopCoroutine(m_attackAnimation);
                 m_attackAnimation = null;
                 yield break;
             } 
         }
 
-        m_attackAnimation = StartCoroutine(AttackAnimation(enemy));
+        m_attackAnimation = StartCoroutine(AttackAnimation(target, hitLanded));
     }
 
     bool AttemptMove(Vector3 target)
@@ -128,7 +139,8 @@ public class CharacterScript : MonoBehaviour
         if(target.x < transform.position.x-1.49 ||
            target.x > transform.position.x+1.49 ||
            target.z < transform.position.z-1.49 ||
-           target.z > transform.position.z+1.49)
+           target.z > transform.position.z+1.49 ||
+           moving || attacking)
         {
             return false;
         }
@@ -163,7 +175,8 @@ public class CharacterScript : MonoBehaviour
             }
             if (t.tag == "Enemy")
             {
-                Attack(t.gameObject);
+                CharacterScript enemy = t.GetComponent<CharacterScript>();
+                Attack(enemy);
                 return false;
             }
         }
@@ -203,7 +216,7 @@ public class CharacterScript : MonoBehaviour
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
-            move = true;
+            moving = true;
         }
     }
 
@@ -218,7 +231,7 @@ public class CharacterScript : MonoBehaviour
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
-            move = true;
+            moving = true;
         }
     }
 
@@ -233,7 +246,7 @@ public class CharacterScript : MonoBehaviour
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
-            move = true;
+            moving = true;
         } 
     }
 
@@ -248,7 +261,7 @@ public class CharacterScript : MonoBehaviour
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
-            move = true;
+            moving = true;
         } 
     }
 
@@ -263,13 +276,12 @@ public class CharacterScript : MonoBehaviour
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
-            move = true;
+            moving = true;
         } 
     }
 
-    public void Attack(GameObject target)
+    public void Attack(CharacterScript target)
     {
-        EnemyScript enemy = target.GetComponent<EnemyScript>();
         Vector3 targetPosition = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
         t0 = 0;
         t1 = 0;
@@ -279,9 +291,17 @@ public class CharacterScript : MonoBehaviour
         initialRotation = transform.rotation;
         moveDestination = targetPosition;
         SetRotationTowardsTarget(targetPosition);
-        attack = true;
-        m_attackAnimation = StartCoroutine(AttackAnimation(enemy));
-        int damage = characterStats.attack - enemy.characterStats.defense;
-        enemy.characterStats.health -= damage;
+        attacking = true;
+        m_attackAnimation = StartCoroutine(AttackAnimation(target));
+    }
+
+    public void Attacked(int damage)
+    {
+        characterCanvas.Attacked(maxHealth, currentHealth, damage);
+    }
+
+    public void SetHealthbarFill()
+    {
+        characterCanvas.SetHealthbarFill(maxHealth, currentHealth);
     }
 }
