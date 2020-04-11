@@ -23,6 +23,8 @@ public class InputManager : MonoBehaviour
     {
         MouseClick();
         Touch();
+        Keyboard();
+        MouseScroll();
     }
 
     void MouseClick()
@@ -40,6 +42,12 @@ public class InputManager : MonoBehaviour
                 }
             }
         }  
+    }
+
+    void MouseScroll()
+    {
+        if(Input.mouseScrollDelta.y != 0)
+            cameraManager.Zoom(Input.mouseScrollDelta.y);
     }
 
     void Touch()
@@ -62,5 +70,18 @@ public class InputManager : MonoBehaviour
                 }
             } 
         } 
+    }
+
+    void Keyboard()
+    {
+        if(Input.GetKeyUp(KeyCode.LeftArrow))
+        {
+            cameraManager.RotateCounterClockwise();
+        }
+        
+        if(Input.GetKeyUp(KeyCode.RightArrow))
+        {
+            cameraManager.RotateClockwise();
+        }
     }
 }

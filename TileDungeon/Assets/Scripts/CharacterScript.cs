@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CharacterScript : MonoBehaviour
 {
-    //Fix camera, Input mouse, Mobile build, Input touch, Fix item pickup, Add enemy that block movement (no AI) and combat.
+    //Make objects clickable, underastand difference between abstract interfaces and inheritance from classes, multiple static levels, lateral movement, second enemy type 
     
     Vector3 currentDirection;
     Vector3 moveDestination, initialPos, offsetY;

@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance = null;
     CharacterScript playerCharacter;
     InputManager inputManager;
+    CameraManager cameraManager;
 
 	void Awake()
 	{
@@ -22,6 +23,7 @@ public class GameManager : MonoBehaviour
     {
         playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
         inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
+        cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();
 
         playerCharacter.m_movement = StartCoroutine(playerCharacter.Movement());
     }

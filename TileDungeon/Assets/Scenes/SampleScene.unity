@@ -589,6 +589,7 @@ GameObject:
   - component: {fileID: 374691084}
   - component: {fileID: 374691083}
   - component: {fileID: 374691082}
+  - component: {fileID: 374691086}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -610,7 +611,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 374691084}
   target: {fileID: 1182368914}
-  moveUnitSec: 0.25
+  initialPos: {x: 0, y: 0, z: 0}
+  targetPos: {x: 0, y: 0, z: 0}
+  rotationTarget: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  zoomDistanceTotal: 0
+  zoomDistanceFrame: 0
+  rotateDegSec: 2
+  moveUnitSec: 0
+  tFollow: 2
+  tRotate: 2
+  tZoom: 2
 --- !u!81 &374691083
 AudioListener:
   m_ObjectHideFlags: 0
@@ -642,10 +653,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 79
+  far clip plane: 50
+  field of view: 60
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 1.69
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -668,13 +679,26 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374691081}
-  m_LocalRotation: {x: 0.2691932, y: 0.38362858, z: -0.11795958, w: 0.8754711}
-  m_LocalPosition: {x: -1.58, y: 1.57, z: -1.55}
+  m_LocalRotation: {x: 0.278011, y: 0.36494622, z: -0.11515592, w: 0.8810581}
+  m_LocalPosition: {x: -1.7, y: 2, z: -1.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 34.184002, y: 47.326004, z: 0}
+  m_LocalEulerAnglesHint: {x: 40, y: 45.000004, z: 0}
+--- !u!114 &374691086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374691081}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 984e0fd5c4e0043f59faa8201589b8ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1182368914}
 --- !u!1001 &423533888
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2551,6 +2575,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1316587894}
     m_Modifications:
+    - target: {fileID: 3744152873527872702, guid: 6749929071b3843759dec15708a83427,
+        type: 3}
+      propertyPath: m_Name
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 4882963214470159960, guid: 6749929071b3843759dec15708a83427,
         type: 3}
       propertyPath: m_FontData.m_HorizontalOverflow
@@ -2630,11 +2659,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchorMin.x
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3744152873527872702, guid: 6749929071b3843759dec15708a83427,
-        type: 3}
-      propertyPath: m_Name
-      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 8351985385984663878, guid: 6749929071b3843759dec15708a83427,
         type: 3}
