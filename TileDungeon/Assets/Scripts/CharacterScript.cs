@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CharacterScript : MonoBehaviour
 {
-    //Make objects clickable, underastand difference between abstract interfaces and inheritance from classes, multiple static levels, lateral movement, second enemy type 
+    //underastand difference between abstract interfaces and inheritance from classes, multiple static levels, lateral movement, second enemy type 
     
     Vector3 currentDirection;
     Vector3 moveDestination, initialPos, offsetY;
@@ -13,7 +13,7 @@ public class CharacterScript : MonoBehaviour
     Quaternion initialRotation;
     int layerMaskTile;
     WaitUntil m_movementCondition;
-    public Coroutine m_movement, m_attackAnimation;
+    public Coroutine m_characterAnimation;
     Ray myRay;
     public bool hasKey;
     int coinCount;
@@ -74,15 +74,22 @@ public class CharacterScript : MonoBehaviour
             LookTowards(targetRotation);
         }
             
-        else if (transform.position != moveDestination)
+        else if (transform.position == moveDestination)
         {
-            MoveTowardsDestination(moveDestination);
+            moving = false;
+            t0 = 0;
+            StopCoroutine(m_characterAnimation);
+            m_characterAnimation = null;
+            yield break;
         } 
         
         else
-            moving = false;
+        {
+            MoveTowardsDestination(moveDestination);
+        }
+            
 
-        m_movement = StartCoroutine(Movement());
+        m_characterAnimation = StartCoroutine(Movement());
     }
 
     IEnumerator AttackAnimation(CharacterScript target, bool hitLanded = false)
@@ -125,13 +132,48 @@ public class CharacterScript : MonoBehaviour
                 t0 = 0;
                 t1 = 0;
                 attacking = false;
-                StopCoroutine(m_attackAnimation);
-                m_attackAnimation = null;
+                StopCoroutine(m_characterAnimation);
+                m_characterAnimation = null;
                 yield break;
             } 
         }
 
-        m_attackAnimation = StartCoroutine(AttackAnimation(target, hitLanded));
+        m_characterAnimation = StartCoroutine(AttackAnimation(target, hitLanded));
+    }
+
+    IEnumerator AttemptToOpenLockedDoorWithoutKeyAnimation(Vector3 target)
+    {
+        yield return null;
+
+        if(t0 < 1)
+        {
+            LookTowards(targetRotation);
+        }
+
+        else if(t1 < 0.8)
+        {
+            t1 = Mathf.Clamp01(t1 + Time.deltaTime * attackSpeed);
+            transform.position = Vector3.Lerp(initialPos, moveDestination, t1);
+            t2 = t1;
+        } 
+
+        else
+        {
+            t2 = Mathf.Clamp01(t2 - Time.deltaTime * attackSpeed);
+            transform.position = Vector3.Lerp(initialPos, moveDestination, t2);
+            
+            if(t2 == 0)
+            {
+                t0 = 0;
+                t1 = 0;
+                attacking = false;
+                StopCoroutine(m_characterAnimation);
+                m_characterAnimation = null;
+                yield break;
+            } 
+        }
+
+        m_characterAnimation = StartCoroutine(AttemptToOpenLockedDoorWithoutKeyAnimation(target));
     }
 
     bool AttemptMove(Vector3 target)
@@ -148,11 +190,11 @@ public class CharacterScript : MonoBehaviour
         myRay = new Ray(target, new Vector3(0,-1,0));
         RaycastHit hit;
 
-        if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+       if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
         {
-            if(hit.collider.tag == "Tile")
             return CheckForTileInteractions(hit.collider.transform);
         }
+
         return false;
     }
 
@@ -169,7 +211,7 @@ public class CharacterScript : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Locked door detected.");
+                    AttemptToOpenLockedDoorWithoutKey(t);
                     return false;
                 }  
             }
@@ -185,7 +227,6 @@ public class CharacterScript : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-            Debug.Log("Collision");
             if(collision.gameObject.tag == "Key")
             {
                 collision.transform.SetParent(null);
@@ -269,6 +310,11 @@ public class CharacterScript : MonoBehaviour
     {
         target = target+offsetY;
 
+        if(target == transform.position)
+        {
+            return;
+        }
+
         if(AttemptMove(target))
         {
             t0 = 0;
@@ -277,12 +323,13 @@ public class CharacterScript : MonoBehaviour
             moveDestination = target;
             SetRotationTowardsTarget(target);
             moving = true;
+            m_characterAnimation = StartCoroutine(Movement());
         } 
     }
 
     public void Attack(CharacterScript target)
     {
-        Vector3 targetPosition = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
+        Vector3 targetPosition = target.transform.position;
         t0 = 0;
         t1 = 0;
         t2 = 0;
@@ -292,7 +339,22 @@ public class CharacterScript : MonoBehaviour
         moveDestination = targetPosition;
         SetRotationTowardsTarget(targetPosition);
         attacking = true;
-        m_attackAnimation = StartCoroutine(AttackAnimation(target));
+        m_characterAnimation = StartCoroutine(AttackAnimation(target));
+    }
+
+    public void AttemptToOpenLockedDoorWithoutKey(Transform target)
+    {
+        Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
+        t0 = 0;
+        t1 = 0;
+        t2 = 0;
+        initialPos = transform.position;
+        rotationSpeed = 2 / rotation90dSec;
+        initialRotation = transform.rotation;
+        moveDestination = targetPosition;
+        SetRotationTowardsTarget(targetPosition);
+        attacking = true;
+        m_characterAnimation = StartCoroutine(AttemptToOpenLockedDoorWithoutKeyAnimation(targetPosition));
     }
 
     public void Attacked(int damage)

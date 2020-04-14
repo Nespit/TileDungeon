@@ -8,7 +8,7 @@ public class InputManager : MonoBehaviour
     GameManager gameManager;
     CameraManager cameraManager;
     Ray myRay;
-    LayerMask layerMaskTile;
+    LayerMask layerMaskTile, layerMaskObject;
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +17,7 @@ public class InputManager : MonoBehaviour
         gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
         cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();
         layerMaskTile = LayerMask.GetMask("Tiles");
+        layerMaskObject = LayerMask.GetMask("Objects");
     }
 
     public void ProcessInput()
@@ -34,12 +35,13 @@ public class InputManager : MonoBehaviour
             RaycastHit hit;
             myRay = cameraManager.mainCamera.ScreenPointToRay(Input.mousePosition); 
         
-            if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+            if(Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
-                if(hit.collider.tag == "Tile")
-                {
-                   character.MoveToLocation(hit.transform.position);
-                }
+                character.MoveToLocation(hit.transform.parent.transform.position);
+            }
+            else if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+            {
+                character.MoveToLocation(hit.transform.position);
             }
         }  
     }
@@ -61,12 +63,13 @@ public class InputManager : MonoBehaviour
                 RaycastHit hit;
                 myRay = cameraManager.mainCamera.ScreenPointToRay(touch.position); 
             
-                if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+            if(Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
                 {
-                    if(hit.collider.tag == "Tile")
-                    {
-                        character.MoveToLocation(hit.transform.position);
-                    }
+                    character.MoveToLocation(hit.transform.parent.transform.position);
+                }
+            else if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+                {
+                    character.MoveToLocation(hit.transform.position);
                 }
             } 
         } 

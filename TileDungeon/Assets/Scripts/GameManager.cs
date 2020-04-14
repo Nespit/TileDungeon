@@ -24,8 +24,6 @@ public class GameManager : MonoBehaviour
         playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
         inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
         cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();
-
-        playerCharacter.m_movement = StartCoroutine(playerCharacter.Movement());
     }
 
     // Update is called once per frame

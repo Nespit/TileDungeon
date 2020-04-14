@@ -11,7 +11,11 @@ public class CameraManager : MonoBehaviour
     WaitUntil m_cameraMovementCondition;
     Coroutine m_cameraMovement;
     int offsetIndex = 0;
-    public float zoomDistanceTotal, zoomDistanceFrame;
+    float zoomDistanceTarget, zoomDistanceFrame;
+    float zoomSensitivity = 3;
+    float zoomSpeed = 4;
+    float zoomMin = -0.5f;
+    float zoomMax = 0.5f;
     public float rotateDegSec = 1f;
     public float moveUnitSec = 16f;
     public float tFollow = 2;
@@ -46,36 +50,34 @@ public class CameraManager : MonoBehaviour
             RotateAround(target);
         }
             
-        if((zoomDistanceTotal > 0 && transform.position.y > 1.19) || (zoomDistanceTotal < 0 && transform.position.y < 3.5))
+        if((zoomDistanceTarget > 0 && transform.position.y > 1.19) || (zoomDistanceTarget < 0 && transform.position.y < 3.5))
         {
-            zoomDistanceFrame = Mathf.Clamp(Mathf.Ceil((zoomDistanceTotal * Time.deltaTime * 4)*100)/100, -0.7f, 0.7f);
-            
-            Vector3 originalPos = transform.position;
+            zoomDistanceFrame = Mathf.Clamp(Mathf.Round(Mathf.Lerp(zoomDistanceFrame, zoomDistanceTarget, Time.deltaTime * zoomSpeed)*100)/100, zoomMin, zoomMax);
+            zoomDistanceTarget -= zoomDistanceFrame;
 
-            
-            Debug.Log("Original Offset[0] = " + offset[0]);
+            Vector3 originalPos = transform.position;
+            Quaternion originalRot = transform.rotation;
+
             transform.position = target.position + offset[0];
             transform.LookAt(target);
             transform.position = transform.position + (transform.forward * zoomDistanceFrame);
+
             offset[0] = transform.position - target.position;
             offset[1] = new Vector3(-offset[0].x, offset[0].y, offset[0].z);
             offset[2] = new Vector3(-offset[0].x, offset[0].y, -offset[0].z);
             offset[3] = new Vector3(offset[0].x, offset[0].y, -offset[0].z);
-            Debug.Log("New Offset[0] = " + offset[0]);
             
             transform.position = originalPos;
-            transform.LookAt(target);
+            transform.rotation = originalRot;
             transform.position = transform.position + (transform.forward * zoomDistanceFrame);
 
-            zoomDistanceTotal -= zoomDistanceFrame;
+            zoomDistanceFrame = 0;
         }
     }
 
     void FollowTarget(Vector3 target)
     {
         transform.position = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.3f);
-        // t0 += Time.deltaTime * moveUnitSec;
-        // transform.position = Vector3.Lerp(initialPos, target, t0);
     }
 
     void RotateAround(Transform target)
@@ -110,12 +112,7 @@ public class CameraManager : MonoBehaviour
     }
 
     public void Zoom(float magnitude)
-    {
-        if(magnitude < 0 && zoomDistanceTotal > 0)
-            zoomDistanceTotal = 0;
-        else if(magnitude > 0 && zoomDistanceTotal < 0)
-            zoomDistanceTotal = 0;
-        
-        zoomDistanceTotal = Mathf.Clamp(zoomDistanceTotal + magnitude, -1, 1);
+    {   
+        zoomDistanceTarget = Mathf.Clamp(zoomDistanceTarget + (magnitude * zoomSensitivity), -2, 2);
     }
 }
