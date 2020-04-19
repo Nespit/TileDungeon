@@ -11,7 +11,7 @@ public class CharacterScript : MonoBehaviour
     Vector3 moveDestination, initialPos, offsetY;
     Quaternion targetRotation;
     Quaternion initialRotation;
-    int layerMaskTile;
+    int layerMaskTile, layerMaskObject;
     WaitUntil m_movementCondition;
     public Coroutine m_characterAnimation;
     Ray myRay;
@@ -28,20 +28,24 @@ public class CharacterScript : MonoBehaviour
     public Text coinCounter;
     public Text winAnnouncement;
     bool moving = false;
-    bool attacking = false;
+    bool animationActive = false;
     public int maxHealth;
     int currentHealth;
     public int attackStrength;
     public int defenseStrength;
     CharacterCanvasController characterCanvas;
+    public Animator characterAnimator;
+    GameManager gameManager;
 
 
     void Start()
     {
+        gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
         currentDirection = transform.position;
         targetRotation = transform.rotation;
         layerMaskTile = LayerMask.GetMask("Tiles");
-        m_movementCondition = new WaitUntil(() => moving == true && attacking == false);
+        layerMaskObject = LayerMask.GetMask("Objects");
+        m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
         offsetY = new Vector3(0, transform.position.y, 0);
         currentHealth = maxHealth;
         characterCanvas = GetComponentInChildren<CharacterCanvasController>();
@@ -131,7 +135,7 @@ public class CharacterScript : MonoBehaviour
             {
                 t0 = 0;
                 t1 = 0;
-                attacking = false;
+                animationActive = false;
                 StopCoroutine(m_characterAnimation);
                 m_characterAnimation = null;
                 yield break;
@@ -166,7 +170,7 @@ public class CharacterScript : MonoBehaviour
             {
                 t0 = 0;
                 t1 = 0;
-                attacking = false;
+                animationActive = false;
                 StopCoroutine(m_characterAnimation);
                 m_characterAnimation = null;
                 yield break;
@@ -182,12 +186,13 @@ public class CharacterScript : MonoBehaviour
            target.x > transform.position.x+1.49 ||
            target.z < transform.position.z-1.49 ||
            target.z > transform.position.z+1.49 ||
-           moving || attacking)
+           moving || animationActive)
         {
             return false;
         }
 
         myRay = new Ray(target, new Vector3(0,-1,0));
+
         RaycastHit hit;
 
        if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
@@ -221,30 +226,42 @@ public class CharacterScript : MonoBehaviour
                 Attack(enemy);
                 return false;
             }
+            if(t.tag == "StairUp")
+            {
+                Debug.Log("Up");
+                StartMoveUpStairs(t, true);
+                return false;
+            }
+            if(t.tag == "StairDown")
+            {
+                Debug.Log("Down");
+                StartMoveDownStairs(t, true);
+                return false;
+            }
         }
         return true;
     }
 
     void OnCollisionEnter(Collision collision)
     {
-            if(collision.gameObject.tag == "Key")
-            {
-                collision.transform.SetParent(null);
-                collision.gameObject.SetActive(false);
-                hasKey = true;
-            }
-            else if(collision.gameObject.tag == "Coin")
-            {
-                collision.transform.SetParent(null);
-                collision.gameObject.SetActive(false);
-                coinCount += 1;
-                coinCounter.text = coinCount.ToString();
+        if(collision.gameObject.tag == "Key")
+        {
+            collision.transform.SetParent(null);
+            collision.gameObject.SetActive(false);
+            hasKey = true;
+        }
+        else if(collision.gameObject.tag == "Coin")
+        {
+            collision.transform.SetParent(null);
+            collision.gameObject.SetActive(false);
+            coinCount += 1;
+            coinCounter.text = coinCount.ToString();
 
-                if (coinCount >= coinsTilWin)
-                {
-                    winAnnouncement.transform.gameObject.SetActive(true);
-                }
+            if (coinCount >= coinsTilWin)
+            {
+                winAnnouncement.transform.gameObject.SetActive(true);
             }
+        }
     }
 
     public void MoveForward()
@@ -338,7 +355,7 @@ public class CharacterScript : MonoBehaviour
         initialRotation = transform.rotation;
         moveDestination = targetPosition;
         SetRotationTowardsTarget(targetPosition);
-        attacking = true;
+        animationActive = true;
         m_characterAnimation = StartCoroutine(AttackAnimation(target));
     }
 
@@ -353,7 +370,7 @@ public class CharacterScript : MonoBehaviour
         initialRotation = transform.rotation;
         moveDestination = targetPosition;
         SetRotationTowardsTarget(targetPosition);
-        attacking = true;
+        animationActive = true;
         m_characterAnimation = StartCoroutine(AttemptToOpenLockedDoorWithoutKeyAnimation(targetPosition));
     }
 
@@ -365,5 +382,131 @@ public class CharacterScript : MonoBehaviour
     public void SetHealthbarFill()
     {
         characterCanvas.SetHealthbarFill(maxHealth, currentHealth);
+    }
+
+    IEnumerator MoveUpStairs(bool loadPreviousLevel)
+    {
+        yield return null;
+        
+        if(t0 < 1)
+        {
+            LookTowards(targetRotation);
+        }
+        
+        else if (loadPreviousLevel)
+        {
+                characterAnimator.Play("MoveDownStairs");
+                
+                WaitUntil movedDown = new WaitUntil(() => characterAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1.0f);
+                m_characterAnimation = StartCoroutine(MoveToNextScene(movedDown));
+
+                t0 = 0;
+                yield break;
+        }
+
+        else
+        {
+                characterAnimator.Play("MoveUpStairs");
+
+                t0 = 0;
+                animationActive = false;
+                m_characterAnimation = null;
+                yield break;
+        }
+
+        m_characterAnimation = StartCoroutine(MoveUpStairs(loadPreviousLevel));
+    }
+    IEnumerator MoveDownStairs(bool loadNextLevel)
+    {
+        yield return null;
+        
+        if(t0 < 1)
+        {
+            LookTowards(targetRotation);
+        }
+
+        else if (loadNextLevel)
+        {       
+                characterAnimator.Play("MoveDownStairs", 0, 0.0f);
+               
+                WaitUntil moveDown = new WaitUntil(() => characterAnimator.GetCurrentAnimatorStateInfo(0).IsName("Teleport"));
+                
+                m_characterAnimation = StartCoroutine(MoveToNextScene(moveDown));
+
+                t0 = 0;
+                yield break;
+        }
+
+        else
+        {
+            characterAnimator.Play("MoveDownStairs");
+            t0 = 0;
+            animationActive = false;
+            m_characterAnimation = null;
+            yield break;
+        }
+
+        m_characterAnimation = StartCoroutine(MoveDownStairs(loadNextLevel));
+    }
+
+    IEnumerator MoveToNextScene(WaitUntil waitUntil)
+    {
+        yield return waitUntil;
+
+        gameManager.MoveToNextScene();
+
+        animationActive = false;   
+
+        m_characterAnimation = StartCoroutine(EnterNextScene());
+    }
+
+    IEnumerator EnterNextScene()
+    {
+        yield return gameManager.m_setSceneActiveCondition;
+
+        Transform target = GameObject.FindGameObjectWithTag("StairUp").transform.parent.transform;
+
+        transform.position = target.position;
+        transform.rotation = target.rotation;
+
+        transform.position += transform.forward;
+
+        m_characterAnimation = null;
+    }
+
+    IEnumerator MoveToPreviousScene(WaitUntil waitUntil)
+    {
+        yield return waitUntil;
+
+        gameManager.MoveToPreviousScene();
+
+        animationActive = false;
+    }
+
+    public void StartMoveUpStairs(Transform target, bool loadPreviousLevel)
+    {
+        Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
+
+        t0 = 0;
+        initialPos = transform.position;
+        rotationSpeed = 2 / rotation90dSec;
+        initialRotation = transform.rotation;
+        SetRotationTowardsTarget(targetPosition);
+        animationActive = true;
+
+        m_characterAnimation = StartCoroutine(MoveUpStairs(loadPreviousLevel));
+    }
+    public void StartMoveDownStairs(Transform target, bool loadNextLevel)
+    {
+        Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
+
+        t0 = 0;
+        initialPos = transform.position;
+        rotationSpeed = 2 / rotation90dSec;
+        initialRotation = transform.rotation;
+        SetRotationTowardsTarget(targetPosition);
+        animationActive = true;
+
+        m_characterAnimation = StartCoroutine(MoveDownStairs(loadNextLevel));
     }
 }

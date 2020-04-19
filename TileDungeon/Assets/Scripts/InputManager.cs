@@ -41,6 +41,7 @@ public class InputManager : MonoBehaviour
             }
             else if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
+                Debug.Log("Hit");
                 character.MoveToLocation(hit.transform.position);
             }
         }  

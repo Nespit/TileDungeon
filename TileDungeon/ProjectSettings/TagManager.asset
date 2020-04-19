@@ -11,7 +11,8 @@ TagManager:
   - Enemy
   - InputManager
   - PlayerCharacter
-  - Stair
+  - StairUp
+  - StairDown
   layers:
   - Default
   - TransparentFX

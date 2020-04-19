@@ -12,6 +12,7 @@ public class CharacterCanvasController : MonoBehaviour
     public float textScrollDistancePerSec;
     float t;
     public Coroutine m_combatTextScroll;
+    public WaitUntil sceneLoadFinished;
     public Image healthbar;
 
     void Start()
