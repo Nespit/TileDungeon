@@ -27,7 +27,7 @@ public class CharacterScript : MonoBehaviour
     public float rotation90dSec = 0.25f;
     public Text coinCounter;
     public Text winAnnouncement;
-    bool moving = false;
+    public bool moving = false;
     bool animationActive = false;
     public int maxHealth;
     int currentHealth;
@@ -55,10 +55,24 @@ public class CharacterScript : MonoBehaviour
     void MoveTowardsDestination(Vector3 destination)
     {
         transform.position = Vector3.MoveTowards(transform.position, destination, movementSpeed*Time.deltaTime);
+        
+        Vector3 rayOrigin = transform.position;
+        Vector3 rayDirection = new Vector3(0,-1,0);
+        
+        myRay = new Ray(rayOrigin, rayDirection);
+        
+        RaycastHit hit;
+
+       if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+        {
+            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY.y, transform.position.z);
+            moveDestination = new Vector3(moveDestination.x, transform.position.y, moveDestination.z);
+        }
     }
 
     void SetRotationTowardsTarget(Vector3 target)
     {
+        target = new Vector3(target.x, transform.position.y, target.z);
         Vector3 direction = (target - transform.position);
         targetRotation = Quaternion.LookRotation(direction, Vector3.up);
     }
@@ -182,20 +196,25 @@ public class CharacterScript : MonoBehaviour
 
     bool AttemptMove(Vector3 target)
     {
+        
         if(target.x < transform.position.x-1.49 ||
            target.x > transform.position.x+1.49 ||
            target.z < transform.position.z-1.49 ||
            target.z > transform.position.z+1.49 ||
+           (target.x > transform.position.x-0.49 &&
+           target.x < transform.position.x+0.49 &&
+           target.z > transform.position.z-0.49 &&
+           target.z < transform.position.z+0.49) ||
            moving || animationActive)
         {
             return false;
         }
 
-        myRay = new Ray(target, new Vector3(0,-1,0));
+        myRay = new Ray(new Vector3(target.x, target.y + 0.5f, target.z), new Vector3(0,-1,0));
 
         RaycastHit hit;
 
-       if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+       if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
         {
             return CheckForTileInteractions(hit.collider.transform);
         }
@@ -228,15 +247,14 @@ public class CharacterScript : MonoBehaviour
             }
             if(t.tag == "StairUp")
             {
-                Debug.Log("Up");
-                StartMoveUpStairs(t, true);
-                return false;
+                moving = true;
+                StartMoveToPreviousScene();
             }
             if(t.tag == "StairDown")
             {
                 Debug.Log("Down");
-                StartMoveDownStairs(t, true);
-                return false;
+                moving = true;
+                StartMoveToNextScene();
             }
         }
         return true;
@@ -384,129 +402,68 @@ public class CharacterScript : MonoBehaviour
         characterCanvas.SetHealthbarFill(maxHealth, currentHealth);
     }
 
-    IEnumerator MoveUpStairs(bool loadPreviousLevel)
+    IEnumerator MoveToPreviousScene()
     {
-        yield return null;
+        WaitUntil moveUp = new WaitUntil(() => moving == false);
+
+        yield return moveUp;
         
-        if(t0 < 1)
-        {
-            LookTowards(targetRotation);
-        }
-        
-        else if (loadPreviousLevel)
-        {
-                characterAnimator.Play("MoveDownStairs");
-                
-                WaitUntil movedDown = new WaitUntil(() => characterAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1.0f);
-                m_characterAnimation = StartCoroutine(MoveToNextScene(movedDown));
+        gameManager.MoveToPreviousScene();
 
-                t0 = 0;
-                yield break;
-        }
-
-        else
-        {
-                characterAnimator.Play("MoveUpStairs");
-
-                t0 = 0;
-                animationActive = false;
-                m_characterAnimation = null;
-                yield break;
-        }
-
-        m_characterAnimation = StartCoroutine(MoveUpStairs(loadPreviousLevel));
+        m_characterAnimation = StartCoroutine(EnterScene(false));
     }
-    IEnumerator MoveDownStairs(bool loadNextLevel)
+    IEnumerator MoveToNextScene()
     {
-        yield return null;
+        WaitUntil moveDown = new WaitUntil(() => moving == false);
         
-        if(t0 < 1)
-        {
-            LookTowards(targetRotation);
-        }
+        yield return moveDown;               
+        
+        gameManager.MoveToNextScene();  
 
-        else if (loadNextLevel)
-        {       
-                characterAnimator.Play("MoveDownStairs", 0, 0.0f);
-               
-                WaitUntil moveDown = new WaitUntil(() => characterAnimator.GetCurrentAnimatorStateInfo(0).IsName("Teleport"));
-                
-                m_characterAnimation = StartCoroutine(MoveToNextScene(moveDown));
-
-                t0 = 0;
-                yield break;
-        }
-
-        else
-        {
-            characterAnimator.Play("MoveDownStairs");
-            t0 = 0;
-            animationActive = false;
-            m_characterAnimation = null;
-            yield break;
-        }
-
-        m_characterAnimation = StartCoroutine(MoveDownStairs(loadNextLevel));
+        m_characterAnimation = StartCoroutine(EnterScene(true));
     }
 
-    IEnumerator MoveToNextScene(WaitUntil waitUntil)
-    {
-        yield return waitUntil;
-
-        gameManager.MoveToNextScene();
-
-        animationActive = false;   
-
-        m_characterAnimation = StartCoroutine(EnterNextScene());
-    }
-
-    IEnumerator EnterNextScene()
+    IEnumerator EnterScene(bool next)
     {
         yield return gameManager.m_setSceneActiveCondition;
 
-        Transform target = GameObject.FindGameObjectWithTag("StairUp").transform.parent.transform;
+        Transform target;
+
+        if(next)
+        {
+            target = GameObject.FindGameObjectWithTag("StairUp").transform.parent.transform;
+            transform.rotation = target.rotation;
+        }
+        else
+        {
+            target = GameObject.FindGameObjectWithTag("StairDown").transform.parent.transform;
+            transform.rotation = Quaternion.Euler(target.rotation.x, target.rotation.y + 180f, target.rotation.z);
+        }
 
         transform.position = target.position;
-        transform.rotation = target.rotation;
+        
 
-        transform.position += transform.forward;
+        Vector3 rayOrigin = new Vector3(transform.position.x, transform.position.y+1, transform.position.z);
+        Vector3 rayDirection = new Vector3(0,-1,0);
+        
+        myRay = new Ray(rayOrigin, rayDirection);
+        
+        RaycastHit hit;
+
+        if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+        {
+            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY.y, transform.position.z);
+        }
 
         m_characterAnimation = null;
     }
 
-    IEnumerator MoveToPreviousScene(WaitUntil waitUntil)
+    public void StartMoveToPreviousScene()
     {
-        yield return waitUntil;
-
-        gameManager.MoveToPreviousScene();
-
-        animationActive = false;
+        m_characterAnimation = StartCoroutine(MoveToPreviousScene());
     }
-
-    public void StartMoveUpStairs(Transform target, bool loadPreviousLevel)
+    public void StartMoveToNextScene()
     {
-        Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
-
-        t0 = 0;
-        initialPos = transform.position;
-        rotationSpeed = 2 / rotation90dSec;
-        initialRotation = transform.rotation;
-        SetRotationTowardsTarget(targetPosition);
-        animationActive = true;
-
-        m_characterAnimation = StartCoroutine(MoveUpStairs(loadPreviousLevel));
-    }
-    public void StartMoveDownStairs(Transform target, bool loadNextLevel)
-    {
-        Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
-
-        t0 = 0;
-        initialPos = transform.position;
-        rotationSpeed = 2 / rotation90dSec;
-        initialRotation = transform.rotation;
-        SetRotationTowardsTarget(targetPosition);
-        animationActive = true;
-
-        m_characterAnimation = StartCoroutine(MoveDownStairs(loadNextLevel));
+        m_characterAnimation = StartCoroutine(MoveToNextScene());
     }
 }
