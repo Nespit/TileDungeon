@@ -5,7 +5,6 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     CharacterScript character;
-    GameManager gameManager;
     CameraManager cameraManager;
     Ray myRay;
     LayerMask layerMaskTile, layerMaskObject;
@@ -14,7 +13,6 @@ public class InputManager : MonoBehaviour
     void Start()
     {
         character = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
-        gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
         cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();
         layerMaskTile = LayerMask.GetMask("Tiles");
         layerMaskObject = LayerMask.GetMask("Objects");

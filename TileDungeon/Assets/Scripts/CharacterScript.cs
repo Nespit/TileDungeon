@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class CharacterScript : MonoBehaviour
 {
@@ -33,14 +34,13 @@ public class CharacterScript : MonoBehaviour
     int currentHealth;
     public int attackStrength;
     public int defenseStrength;
+    public bool dontReload = false;
     CharacterCanvasController characterCanvas;
     public Animator characterAnimator;
-    GameManager gameManager;
 
 
     void Start()
     {
-        gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
         currentDirection = transform.position;
         targetRotation = transform.rotation;
         layerMaskTile = LayerMask.GetMask("Tiles");
@@ -50,6 +50,24 @@ public class CharacterScript : MonoBehaviour
         currentHealth = maxHealth;
         characterCanvas = GetComponentInChildren<CharacterCanvasController>();
         SetHealthbarFill();
+        GameManager.instance.SaveEvent += SaveFunction;
+
+        SavedObjectsList localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
+        
+        if(localListOfSceneObjectsToLoad != null && gameObject.tag != "PlayerCharacter" && dontReload)
+            Destroy(gameObject);
+    }
+
+    public void OnDestroy()
+    {
+        GameManager.instance.SaveEvent -= SaveFunction;
+    }
+
+    public void SaveFunction(object sender, EventArgs args)
+    {
+        SavedCharacter savedCharacter = new SavedCharacter(transform.position, transform.rotation, currentHealth);
+
+        GameManager.instance.GetListForScene().SavedCharacters.Add(savedCharacter);
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -262,6 +280,9 @@ public class CharacterScript : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        if(gameObject.tag != "PlayerCharacter")
+            return;
+
         if(collision.gameObject.tag == "Key")
         {
             collision.transform.SetParent(null);
@@ -408,7 +429,7 @@ public class CharacterScript : MonoBehaviour
 
         yield return moveUp;
         
-        gameManager.MoveToPreviousScene();
+        GameManager.instance.MoveToPreviousScene();
 
         m_characterAnimation = StartCoroutine(EnterScene(false));
     }
@@ -418,14 +439,14 @@ public class CharacterScript : MonoBehaviour
         
         yield return moveDown;               
         
-        gameManager.MoveToNextScene();  
+        GameManager.instance.MoveToNextScene();  
 
         m_characterAnimation = StartCoroutine(EnterScene(true));
     }
 
     IEnumerator EnterScene(bool next)
     {
-        yield return gameManager.m_setSceneActiveCondition;
+        yield return GameManager.instance.m_setSceneActiveCondition;
 
         Transform target;
 

@@ -701,6 +701,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1921ff978f4df4b04aa9e6651d80ee09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SavedLists: []
+  IsSceneBeingLoaded: 0
+  keyPrefab: {fileID: 8564553345722179843, guid: 9a50520894fe74e719a6c33aa529a9a3,
+    type: 3}
+  coinPrefab: {fileID: 3749554576871498332, guid: c993220f296da48b8b9c12fe70fcf8b2,
+    type: 3}
+  doorPrefab: {fileID: 7968900514670330098, guid: a1f7effb9a7a248f9a74646709ddafea,
+    type: 3}
+  enemyPrefab: {fileID: 3744152873527872702, guid: 6749929071b3843759dec15708a83427,
+    type: 3}
 --- !u!4 &1212906904
 Transform:
   m_ObjectHideFlags: 0
