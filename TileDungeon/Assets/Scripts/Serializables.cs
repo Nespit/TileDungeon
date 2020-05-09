@@ -7,12 +7,14 @@ using System;
 [Serializable]
 public class SavedInteractableObject //keys, coins, doors
 {
+    public float tileID;
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
     public InteractableObjectType objectType;
 
-    public SavedInteractableObject(Vector3 position, Quaternion rotation, InteractableObjectType objectType)
+    public SavedInteractableObject(float tileID, Vector3 position, Quaternion rotation, InteractableObjectType objectType)
     {
+        this.tileID = tileID;
         this.position = position;
         this.rotation = rotation;
         this.objectType = objectType;
@@ -21,12 +23,14 @@ public class SavedInteractableObject //keys, coins, doors
 
 [Serializable]
 public class SavedCharacter
-{
+{   
+    public float tileID;
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
     public int currentHealth;
-    public SavedCharacter(Vector3 position, Quaternion rotation, int currentHealth)
+    public SavedCharacter(float tileID, Vector3 position, Quaternion rotation, int currentHealth)
     {
+        this.tileID = tileID;
         this.position = position;
         this.rotation = rotation;
         this.currentHealth = currentHealth;
@@ -34,13 +38,13 @@ public class SavedCharacter
 }
 
 [Serializable]
-public class SavedObjectsList
+public class SavedListsPerScene
 {
     public int SceneID;
     public List<SavedInteractableObject> SavedInteractableObjects;
     public List<SavedCharacter> SavedCharacters;
 
-    public SavedObjectsList(int newSceneID)
+    public SavedListsPerScene(int newSceneID)
     {
         this.SceneID = newSceneID;
         this.SavedInteractableObjects = new List<SavedInteractableObject>();

@@ -31,13 +31,19 @@ public class CharacterScript : MonoBehaviour
     public bool moving = false;
     bool animationActive = false;
     public int maxHealth;
-    int currentHealth;
+    public int currentHealth;
     public int attackStrength;
     public int defenseStrength;
     public bool dontReload = false;
     CharacterCanvasController characterCanvas;
     public Animator characterAnimator;
 
+
+    void Awake()
+    {
+        characterCanvas = GetComponentInChildren<CharacterCanvasController>();
+        currentHealth = maxHealth;
+    }
 
     void Start()
     {
@@ -47,25 +53,31 @@ public class CharacterScript : MonoBehaviour
         layerMaskObject = LayerMask.GetMask("Objects");
         m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
         offsetY = new Vector3(0, transform.position.y, 0);
-        currentHealth = maxHealth;
-        characterCanvas = GetComponentInChildren<CharacterCanvasController>();
-        SetHealthbarFill();
-        GameManager.instance.SaveEvent += SaveFunction;
-
-        SavedObjectsList localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
         
-        if(localListOfSceneObjectsToLoad != null && gameObject.tag != "PlayerCharacter" && dontReload)
-            Destroy(gameObject);
+        SetHealthbarFill();
+        
+        if (gameObject.tag == "Enemy")
+        {
+            GameManager.instance.SaveEvent += SaveFunction;
+
+            SavedListsPerScene localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
+        
+            if(localListOfSceneObjectsToLoad != null && dontReload)
+                Destroy(gameObject);
+        }
     }
 
     public void OnDestroy()
     {
-        GameManager.instance.SaveEvent -= SaveFunction;
+        if (gameObject.tag != "PlayerCharacter)")
+            GameManager.instance.SaveEvent -= SaveFunction;
     }
 
     public void SaveFunction(object sender, EventArgs args)
     {
-        SavedCharacter savedCharacter = new SavedCharacter(transform.position, transform.rotation, currentHealth);
+        float tileID = transform.parent.GetComponent<TileScript>().tileID;
+
+        SavedCharacter savedCharacter = new SavedCharacter(tileID, transform.position, transform.rotation, currentHealth);
 
         GameManager.instance.GetListForScene().SavedCharacters.Add(savedCharacter);
     }
@@ -155,8 +167,9 @@ public class CharacterScript : MonoBehaviour
 
                 if(target.currentHealth <= 0)
                 {
-                    target.transform.SetParent(null);
-                    target.gameObject.SetActive(false);
+                    // target.transform.SetParent(null);
+                    // target.gameObject.SetActive(false);
+                    Destroy(target.gameObject);
                 }
             }
             
@@ -248,8 +261,9 @@ public class CharacterScript : MonoBehaviour
             {
                 if(hasKey)
                 {
-                    t.SetParent(null);
-                    t.gameObject.SetActive(false);
+                    // t.SetParent(null);
+                    // t.gameObject.SetActive(false);
+                    Destroy(t.gameObject);
                 }
                 else
                 {
@@ -285,16 +299,18 @@ public class CharacterScript : MonoBehaviour
 
         if(collision.gameObject.tag == "Key")
         {
-            collision.transform.SetParent(null);
-            collision.gameObject.SetActive(false);
+            // collision.transform.SetParent(null);
+            // collision.gameObject.SetActive(false);
             hasKey = true;
+            Destroy(collision.gameObject);
         }
         else if(collision.gameObject.tag == "Coin")
         {
-            collision.transform.SetParent(null);
-            collision.gameObject.SetActive(false);
+            // collision.transform.SetParent(null);
+            // collision.gameObject.SetActive(false);
             coinCount += 1;
             coinCounter.text = coinCount.ToString();
+            Destroy(collision.gameObject);
 
             if (coinCount >= coinsTilWin)
             {
@@ -421,6 +437,20 @@ public class CharacterScript : MonoBehaviour
     public void SetHealthbarFill()
     {
         characterCanvas.SetHealthbarFill(maxHealth, currentHealth);
+    }
+
+    public void SetCurrentHealth(int health)
+    {
+        if(health > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+        else
+        {
+            currentHealth = health;
+        }
+
+        SetHealthbarFill();
     }
 
     IEnumerator MoveToPreviousScene()

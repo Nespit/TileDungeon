@@ -14,11 +14,12 @@ public class GameManager : MonoBehaviour
     CameraManager cameraManager;
     public WaitUntil m_setSceneActiveCondition;
     Coroutine m_setSceneActive;
-    public List<SavedObjectsList> SavedLists;
+    public List<SavedListsPerScene> SavedLists;
     public delegate void SaveDelegate(object sender, EventArgs args);
     public event SaveDelegate SaveEvent;
     public bool IsSceneBeingLoaded = false;
     public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab;
+    public Dictionary<float, Transform> currentSceneTiles;
 
 	void Awake()
 	{
@@ -33,6 +34,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         InitializeSceneList();
+        PrepareTileDictionary();
 
         playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
         inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
@@ -62,7 +64,7 @@ public class GameManager : MonoBehaviour
         
         SceneManager.SetActiveScene(scene);
 
-        SavedObjectsList localListOfSceneObjectsToLoad = GetListForScene();
+        SavedListsPerScene localListOfSceneObjectsToLoad = GetListForScene();
 
         if (localListOfSceneObjectsToLoad != null)
         {
@@ -74,23 +76,24 @@ public class GameManager : MonoBehaviour
                 {
                     case InteractableObjectType.door:
                         Debug.Log("Spawn door");
-                         spawnedObject = Instantiate(doorPrefab,
-                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
-                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
-                        
+                        spawnedObject = Instantiate(doorPrefab,
+                                                    localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
+                                                    localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
                         break;
                     case InteractableObjectType.coin:
                         Debug.Log("Spawn coin");
                         spawnedObject = Instantiate(coinPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
-                        
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
                         break;
                     case InteractableObjectType.key:
                         Debug.Log("Spawn key");
                         spawnedObject = Instantiate(keyPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
                         break;
                 }
             }
@@ -99,8 +102,11 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("Spawn character");
                 spawnedObject = Instantiate(enemyPrefab,
-                                            localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
-                                            localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
+                                            localListOfSceneObjectsToLoad.SavedCharacters[i].position,
+                                            localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
+                spawnedObject.GetComponent<CharacterScript>().SetCurrentHealth(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
+                Debug.Log(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
+                spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
             }
         }
         else   
@@ -127,11 +133,12 @@ public class GameManager : MonoBehaviour
         
         InitializeSceneList();
         SaveData();
+        PrepareTileDictionary();
 
         IsSceneBeingLoaded = true;
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex+1).isLoaded);
         SceneManager.LoadSceneAsync(currentSceneIndex+1, LoadSceneMode.Additive);
         SceneManager.UnloadSceneAsync(currentSceneIndex);
-        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex+1).isLoaded);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex+1)));
     }
 
@@ -139,19 +146,25 @@ public class GameManager : MonoBehaviour
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
-        if(currentSceneIndex + 1 <= 1)
+        if(currentSceneIndex - 1 < 1)
         {
             return;
         }
         
         InitializeSceneList();
         SaveData();
+        PrepareTileDictionary();
 
         IsSceneBeingLoaded = true;
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
         SceneManager.LoadSceneAsync(currentSceneIndex-1, LoadSceneMode.Additive);
         SceneManager.UnloadSceneAsync(currentSceneIndex);
-        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1)));
+    }
+
+    void PrepareTileDictionary()
+    {
+        currentSceneTiles = new Dictionary<float, Transform>();
     }
 
     // public void MoveToPreviousScene()
@@ -199,7 +212,7 @@ public class GameManager : MonoBehaviour
         if (SavedLists == null)
         {
             print("Saved lists was null");
-            SavedLists = new List<SavedObjectsList>();
+            SavedLists = new List<SavedListsPerScene>();
         }
 
         bool found = false;
@@ -217,14 +230,14 @@ public class GameManager : MonoBehaviour
         //If not, we need to create it:
         if (!found)
         {           
-            SavedObjectsList newList = new SavedObjectsList(SceneManager.GetActiveScene().buildIndex);
+            SavedListsPerScene newList = new SavedListsPerScene(SceneManager.GetActiveScene().buildIndex);
             SavedLists.Add(newList);
 
             print("Created new list!");
         }
     }
 
-    public SavedObjectsList GetListForScene(int sceneBuildIndex = -1)
+    public SavedListsPerScene GetListForScene(int sceneBuildIndex = -1)
     {
         if(sceneBuildIndex >= 0)
         {
@@ -280,7 +293,7 @@ public class GameManager : MonoBehaviour
         BinaryFormatter formatter = new BinaryFormatter();
         FileStream saveObjects = File.Open("Saves/saveObjects.binary", FileMode.Open);
 
-        SavedLists = (List<SavedObjectsList>)formatter.Deserialize(saveObjects);
+        SavedLists = (List<SavedListsPerScene>)formatter.Deserialize(saveObjects);
     
         saveObjects.Close();
 

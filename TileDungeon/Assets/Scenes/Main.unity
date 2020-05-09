@@ -703,7 +703,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SavedLists: []
   IsSceneBeingLoaded: 0
-  keyPrefab: {fileID: 8564553345722179843, guid: 9a50520894fe74e719a6c33aa529a9a3,
+  keyPrefab: {fileID: 4301790635709430899, guid: 9a50520894fe74e719a6c33aa529a9a3,
     type: 3}
   coinPrefab: {fileID: 3749554576871498332, guid: c993220f296da48b8b9c12fe70fcf8b2,
     type: 3}
@@ -890,6 +890,11 @@ PrefabInstance:
       propertyPath: characterAnimator
       value: 
       objectReference: {fileID: 2083281853}
+    - target: {fileID: 4883636031835103955, guid: afd5ed1043b5c4de1854b612496a4512,
+        type: 3}
+      propertyPath: dontReload
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4883636032197572541, guid: afd5ed1043b5c4de1854b612496a4512,
         type: 3}
       propertyPath: m_Camera

@@ -168,6 +168,7 @@ GameObject:
   - component: {fileID: 1135257289122799355}
   - component: {fileID: 3241738159043122227}
   - component: {fileID: 2786871150534809379}
+  - component: {fileID: 9026249897540365634}
   m_Layer: 10
   m_Name: Stair
   m_TagString: Tile
@@ -259,6 +260,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 0.2, z: 0.2}
   m_Center: {x: 0, y: 0.95, z: -0.4}
+--- !u!114 &9026249897540365634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3077603064311282021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25bcbcbe1cb944b24bb16cfd3a1b72f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileID: 0
 --- !u!1 &5164167254110710451
 GameObject:
   m_ObjectHideFlags: 0

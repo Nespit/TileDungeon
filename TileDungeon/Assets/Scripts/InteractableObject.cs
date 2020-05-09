@@ -7,12 +7,13 @@ public class InteractableObject : MonoBehaviour
 {
     public InteractableObjectType objectType;
     public bool dontReload = false;
+
     // Start is called before the first frame update
     void Start()
     {
         GameManager.instance.SaveEvent += SaveFunction;
 
-        SavedObjectsList localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
+        SavedListsPerScene localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
         
         if(localListOfSceneObjectsToLoad != null && dontReload)
             Destroy(gameObject);
@@ -25,7 +26,9 @@ public class InteractableObject : MonoBehaviour
 
     public void SaveFunction(object sender, EventArgs args)
     {
-        SavedInteractableObject savedObject = new SavedInteractableObject(transform.position, transform.rotation, objectType);
+        float tileID = transform.parent.GetComponent<TileScript>().tileID;
+        
+        SavedInteractableObject savedObject = new SavedInteractableObject(tileID, transform.position, transform.rotation, objectType);
 
         GameManager.instance.GetListForScene().SavedInteractableObjects.Add(savedObject);  
     }
