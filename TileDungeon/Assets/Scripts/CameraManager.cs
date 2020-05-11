@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
+    public static CameraManager instance;
     public Camera mainCamera;
     public Transform target;
     public Vector3 initialPos, targetPos, rotationTarget, velocity;
@@ -21,6 +22,17 @@ public class CameraManager : MonoBehaviour
     public float tFollow = 2;
     public float tRotate = 2;
     public float tZoom = 2;
+    Bounds transparencyArea;
+
+    void Awake()
+	{
+		if (instance == null) {
+			instance = this;
+		} else if (instance != this) {
+			Destroy(gameObject);    
+		}
+		DontDestroyOnLoad(gameObject);
+	}
 
     void Start()
     {
@@ -73,6 +85,14 @@ public class CameraManager : MonoBehaviour
 
             zoomDistanceFrame = 0;
         }
+
+        Vector3 pointBetweenCameraAndTarget = (transform.position + target.position) / 2;
+        Vector3 pointBelowCamera = new Vector3(transform.position.x, target.position.y, transform.position.z);
+
+        float distanceToMidpoint = Vector3.Distance(pointBelowCamera, target.position);
+        Vector3 boundingBoxExtend = new Vector3(distanceToMidpoint, distanceToMidpoint, distanceToMidpoint);
+
+        transparencyArea = new Bounds(pointBetweenCameraAndTarget, boundingBoxExtend);
     }
 
     void FollowTarget(Vector3 target)
@@ -114,5 +134,13 @@ public class CameraManager : MonoBehaviour
     public void Zoom(float magnitude)
     {   
         zoomDistanceTarget = Mathf.Clamp(zoomDistanceTarget + (magnitude * zoomSensitivity), -2, 2);
+    }
+
+    public bool IsBetweenCameraAndPlayer(Transform transform)
+    {
+        if(transparencyArea.Contains(transform.position))
+            return true;
+        else
+            return false;
     }
 }
