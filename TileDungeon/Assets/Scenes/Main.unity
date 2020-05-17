@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.49641275, b: 0.57481736, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028373, g: 0.22571406, b: 0.3069228, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -50,7 +50,7 @@ LightmapSettings:
     m_BounceScale: 1
     m_IndirectOutputScale: 1
     m_AlbedoBoost: 1
-    m_EnvironmentLightingMode: 0
+    m_EnvironmentLightingMode: 1
     m_EnableBakedLightmaps: 1
     m_EnableRealtimeLightmaps: 1
   m_LightmapEditorSettings:
@@ -65,12 +65,12 @@ LightmapSettings:
     m_Padding: 2
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
-    m_TextureCompression: 1
+    m_TextureCompression: 0
     m_FinalGather: 0
     m_FinalGatherFiltering: 1
     m_FinalGatherRayCount: 256
-    m_ReflectionCompression: 2
-    m_MixedBakeMode: 0
+    m_ReflectionCompression: 0
+    m_MixedBakeMode: 1
     m_BakeBackend: 1
     m_PVRSampling: 1
     m_PVRDirectSampleCount: 32
@@ -88,7 +88,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ShowResolutionOverlay: 1
-  m_LightingDataAsset: {fileID: 112000002, guid: d0c2408052e2844c584a35eff4128cd1,
+  m_LightingDataAsset: {fileID: 112000002, guid: 0db0c0a1aa0454cdbb58aaca0eb977ee,
     type: 2}
   m_UseShadowmask: 0
 --- !u!196 &4
@@ -340,11 +340,10 @@ MonoBehaviour:
   targetPos: {x: 0, y: 0, z: 0}
   rotationTarget: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
-  rotateDegSec: 2
-  moveUnitSec: 0
-  tFollow: 2
-  tRotate: 2
-  tZoom: 2
+  cameraUpdateSpeed: 3
+  tUpdatePos: 2
+  meshTransform: {fileID: 0}
+  mesh: {fileID: 0}
 --- !u!81 &374691083
 AudioListener:
   m_ObjectHideFlags: 0
@@ -375,7 +374,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 50
   field of view: 60
   orthographic: 0
@@ -391,7 +390,7 @@ Camera:
   m_HDR: 1
   m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
+  m_ForceIntoRT: 1
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
@@ -402,8 +401,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374691081}
-  m_LocalRotation: {x: 0.278011, y: 0.36494622, z: -0.11515592, w: 0.8810581}
-  m_LocalPosition: {x: -1.7, y: 2, z: -1.7}
+  m_LocalRotation: {x: 0.38804808, y: 0, z: 0, w: 0.92163914}
+  m_LocalPosition: {x: 0, y: 1.8, z: -1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

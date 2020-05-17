@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class WallTransparency : MonoBehaviour
 {
@@ -13,14 +14,28 @@ public class WallTransparency : MonoBehaviour
     {
         localRenderer = GetComponent<MeshRenderer>();
         standardMat = localRenderer.material;
+        CameraManager.instance.TransparencyEvent += TransparencyFunction;
     }
 
     // Update is called once per frame
-    void Update()
+    // void Update()
+    // {
+    //     if (CameraManager.instance.IsBetweenCameraAndPlayer(transform))
+    //         localRenderer.material = transparentMat;
+    //     else
+    //         localRenderer.material = standardMat;
+    // }
+
+    void TransparencyFunction(object sender, EventArgs args)
     {
         if (CameraManager.instance.IsBetweenCameraAndPlayer(transform))
             localRenderer.material = transparentMat;
         else
             localRenderer.material = standardMat;
+    }
+
+    public void OnDestroy()
+    {
+        CameraManager.instance.TransparencyEvent -= TransparencyFunction;
     }
 }

@@ -47,8 +47,14 @@ public class InputManager : MonoBehaviour
 
     void MouseScroll()
     {
-        if(Input.mouseScrollDelta.y != 0)
-            cameraManager.Zoom(Input.mouseScrollDelta.y);
+        // if(Input.mouseScrollDelta.y != 0)
+        //     cameraManager.Zoom(Input.mouseScrollDelta.y);
+
+        if(Input.mouseScrollDelta.y < 0)
+            CameraManager.instance.ZoomOut();
+
+        else if(Input.mouseScrollDelta.y > 0)
+            CameraManager.instance.ZoomIn();
     }
 
     void Touch()
