@@ -9,10 +9,10 @@ public class CameraManager : MonoBehaviour
     public Camera mainCamera;
     public Transform target;
     public Vector3 initialPos, targetPos, rotationTarget, velocity, targetTargetPos;
-    Vector3[] offset = new Vector3[4];
+    public Vector3[] offset = new Vector3[4];
     WaitUntil m_cameraMovementCondition;
     Coroutine m_camera;
-    int offsetIndex = 0;
+    public int offsetIndex = 0;
     int zoomIndex = 0;
     public float cameraUpdateSpeed = 4;
     public float tUpdatePos = 2;

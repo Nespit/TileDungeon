@@ -53,6 +53,25 @@ public class SavedListsPerScene
 }
 
 [Serializable]
+public class SavedDataPerGame
+{
+    public int SceneID;
+    public SerializableVector3 position;
+    public SerializableQuaternion rotation;
+    public int currentHealth;
+    public bool hasKey;
+
+    public SavedDataPerGame(int newSceneID, Vector3 position, Quaternion rotation, int currentHealth, bool hasKey)
+    {
+        this.SceneID = newSceneID;
+        this.position = position;
+        this.rotation = rotation;
+        this.currentHealth = currentHealth;
+        this.hasKey = hasKey;
+    }
+}
+
+[Serializable]
  public struct SerializableVector3
  {
      public float x;

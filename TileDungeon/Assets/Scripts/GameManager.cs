@@ -14,12 +14,16 @@ public class GameManager : MonoBehaviour
     CameraManager cameraManager;
     public WaitUntil m_setSceneActiveCondition;
     Coroutine m_setSceneActive;
-    public List<SavedListsPerScene> SavedLists;
+    public List<SavedListsPerScene> savedLists;
+    public SavedDataPerGame savedGameData;
     public delegate void SaveDelegate(object sender, EventArgs args);
     public event SaveDelegate SaveEvent;
     public bool IsSceneBeingLoaded = false;
     public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab;
     public Dictionary<float, Transform> currentSceneTiles;
+    GameState gameState;
+    public MainMenu mainMenu;
+
 
 	void Awake()
 	{
@@ -31,8 +35,94 @@ public class GameManager : MonoBehaviour
 		DontDestroyOnLoad(gameObject);
 	}
 
+    IEnumerator NewGame()
+    {
+        DiscardData();
+
+        if(SceneManager.sceneCount > 1)
+        {
+            Scene scene = SceneManager.GetActiveScene();
+
+            m_setSceneActiveCondition = new WaitUntil(() => !scene.isLoaded);
+            SceneManager.UnloadSceneAsync(scene);
+        }
+        else m_setSceneActiveCondition = new WaitUntil(() => true);
+
+        yield return m_setSceneActiveCondition;
+
+        SceneManager.LoadScene(1, LoadSceneMode.Additive);
+
+        playerCharacter.transform.position = new Vector3(0f, 0.26f, 0f);
+        CameraManager.instance.targetTargetPos = playerCharacter.transform.position;
+        CameraManager.instance.transform.position = playerCharacter.transform.position + CameraManager.instance.offset[CameraManager.instance.offsetIndex];
+        CameraManager.instance.transform.LookAt(CameraManager.instance.target);
+        playerCharacter.transform.rotation = Quaternion.Euler(0, 0, 0);
+        playerCharacter.hasKey = false;
+        playerCharacter.currentHealth = 100;
+
+        if(mainMenu.gameObject.activeInHierarchy)
+        {
+            yield return new WaitForEndOfFrame();
+
+            Menu();
+        }
+
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(1).isLoaded);
+        m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(1)));
+    }
+
+    IEnumerator OldGame()
+    {
+        DiscardData();
+
+        if(SceneManager.sceneCount > 1)
+        {
+            Scene scene = SceneManager.GetActiveScene();
+
+            m_setSceneActiveCondition = new WaitUntil(() => !scene.isLoaded);
+            SceneManager.UnloadSceneAsync(scene);
+        }
+        else m_setSceneActiveCondition = new WaitUntil(() => true);
+
+        yield return m_setSceneActiveCondition;
+       
+        LoadData();
+
+        SceneManager.LoadScene(savedGameData.SceneID, LoadSceneMode.Additive);
+
+        playerCharacter.transform.position = savedGameData.position;
+        CameraManager.instance.targetTargetPos = playerCharacter.transform.position;
+        CameraManager.instance.transform.position = playerCharacter.transform.position + CameraManager.instance.offset[CameraManager.instance.offsetIndex];
+        CameraManager.instance.transform.LookAt(CameraManager.instance.target);
+        playerCharacter.transform.rotation = savedGameData.rotation;
+        playerCharacter.hasKey = savedGameData.hasKey;
+        playerCharacter.currentHealth = savedGameData.currentHealth;
+
+        if(mainMenu.gameObject.activeInHierarchy)
+        {
+            yield return new WaitForEndOfFrame();
+
+            Menu();
+        }
+
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(savedGameData.SceneID).isLoaded);
+        m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(savedGameData.SceneID)));
+    }
+
+    public void LoadGame()
+    {
+        m_setSceneActive = StartCoroutine(OldGame());
+    }
+
+    public void StartNewGame()
+    {
+        m_setSceneActive = StartCoroutine(NewGame());
+    }
+
     void Start()
     {
+        SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
+
         InitializeSceneList();
         PrepareTileDictionary();
 
@@ -50,12 +140,18 @@ public class GameManager : MonoBehaviour
         {
             SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
         }
+
+        if(mainMenu.gameObject.activeInHierarchy)
+            gameState = GameState.MainMenu;
+        else    
+            gameState = GameState.Game;
     }
 
     // Update is called once per frame
     void Update()
     {
-        inputManager.ProcessInput();
+        if(gameState == GameState.Game)
+            inputManager.ProcessInput();
     }
 
     IEnumerator SetSceneActive(Scene scene)
@@ -209,18 +305,18 @@ public class GameManager : MonoBehaviour
 
     public void InitializeSceneList()
     {
-        if (SavedLists == null)
+        if (savedLists == null)
         {
             print("Saved lists was null");
-            SavedLists = new List<SavedListsPerScene>();
+            savedLists = new List<SavedListsPerScene>();
         }
 
         bool found = false;
 
         //We need to find if we already have a list of saved items for this level:
-        for (int i = 0; i < SavedLists.Count; i++)
+        for (int i = 0; i < savedLists.Count; i++)
         {
-            if (SavedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
+            if (savedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
             {
                 found = true;
                 print("Scene was found in saved lists!");
@@ -231,7 +327,7 @@ public class GameManager : MonoBehaviour
         if (!found)
         {           
             SavedListsPerScene newList = new SavedListsPerScene(SceneManager.GetActiveScene().buildIndex);
-            SavedLists.Add(newList);
+            savedLists.Add(newList);
 
             print("Created new list!");
         }
@@ -241,29 +337,30 @@ public class GameManager : MonoBehaviour
     {
         if(sceneBuildIndex >= 0)
         {
-            for (int i = 0; i < SavedLists.Count; i++)
+            for (int i = 0; i < savedLists.Count; i++)
             {
-                if (SavedLists[i].SceneID == sceneBuildIndex)
-                    return SavedLists[i];
+                if (savedLists[i].SceneID == sceneBuildIndex)
+                    return savedLists[i];
             }
         }
         
         else
         {
-            for (int i = 0; i < SavedLists.Count; i++)
+            for (int i = 0; i < savedLists.Count; i++)
             {
-                if (SavedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
-                    return SavedLists[i];
+                if (savedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
+                    return savedLists[i];
             }
         }
         
 
-        print("Total list count: " + SavedLists.Count.ToString() + " , not found index: " + SceneManager.GetActiveScene().buildIndex.ToString());
+        print("Total list count: " + savedLists.Count.ToString() + " , not found index: " + SceneManager.GetActiveScene().buildIndex.ToString());
         return null;
     }
 
     public void FireSaveEvent()
     {
+        savedGameData = new SavedDataPerGame(SceneManager.GetActiveScene().buildIndex, playerCharacter.gameObject.transform.position, playerCharacter.gameObject.transform.rotation, playerCharacter.currentHealth, playerCharacter.hasKey);
         GetListForScene().SavedCharacters = new List<SavedCharacter>();
         GetListForScene().SavedInteractableObjects = new List<SavedInteractableObject>();
         //If we have any functions in the event:
@@ -279,11 +376,18 @@ public class GameManager : MonoBehaviour
         FireSaveEvent();  
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream SaveObjects = File.Create("saves/saveObjects.binary");
+        FileStream saveObjects = File.Create("saves/saveObjects.binary");
 
-        formatter.Serialize(SaveObjects, SavedLists);
+        formatter.Serialize(saveObjects, savedLists);
 
-        SaveObjects.Close();
+        saveObjects.Close();
+
+
+        saveObjects = File.Create("saves/saveGame.binary");
+
+        formatter.Serialize(saveObjects, savedGameData);
+        
+        saveObjects.Close();
 
         print("Saved!");
     }
@@ -291,12 +395,44 @@ public class GameManager : MonoBehaviour
     public void LoadData()
     {
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream saveObjects = File.Open("Saves/saveObjects.binary", FileMode.Open);
+        FileStream saveObjects = File.Open("saves/saveObjects.binary", FileMode.Open);
 
-        SavedLists = (List<SavedListsPerScene>)formatter.Deserialize(saveObjects);
+        savedLists = (List<SavedListsPerScene>)formatter.Deserialize(saveObjects);
+    
+        saveObjects.Close();
+
+        saveObjects = File.Open("saves/saveGame.binary", FileMode.Open);
+
+        savedGameData = (SavedDataPerGame)formatter.Deserialize(saveObjects);
     
         saveObjects.Close();
 
         print("Loaded");
     }
+
+    public void DiscardData()
+    {
+        if (savedLists != null)
+        {
+            savedLists = new List<SavedListsPerScene>();
+            savedGameData = null;
+            PrepareTileDictionary();
+        }
+    }
+
+    public void Menu()
+    {
+        mainMenu.gameObject.SetActive(!mainMenu.gameObject.activeInHierarchy);
+
+        if(mainMenu.gameObject.activeInHierarchy)
+            gameState = GameState.MainMenu;
+        else    
+            gameState = GameState.Game;
+    }
+}
+
+enum GameState
+{
+    MainMenu,
+    Game
 }
