@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028373, g: 0.22571406, b: 0.3069228, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.49641275, b: 0.57481736, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -211,6 +211,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad4e5ea4533d34217b3c2c00fc617497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minSwipeDist: 0
+  maxSwipeDist: 0
+  maxSwipeDuration: 0
 --- !u!4 &211963543
 Transform:
   m_ObjectHideFlags: 0
@@ -340,10 +343,12 @@ MonoBehaviour:
   targetPos: {x: 0, y: 0, z: 0}
   rotationTarget: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
-  cameraUpdateSpeed: 3
+  targetTargetPos: {x: 0, y: 0, z: 0}
+  cameraUpdateSpeed: 2
   tUpdatePos: 2
   meshTransform: {fileID: 0}
   mesh: {fileID: 0}
+  boundingBoxSideLength: 4
 --- !u!81 &374691083
 AudioListener:
   m_ObjectHideFlags: 0
@@ -402,7 +407,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374691081}
   m_LocalRotation: {x: 0.38804808, y: 0, z: 0, w: 0.92163914}
-  m_LocalPosition: {x: 0, y: 1.8, z: -1.5}
+  m_LocalPosition: {x: 0, y: 1.767, z: -1.468}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -878,5 +883,10 @@ PrefabInstance:
       propertyPath: winAnnouncement
       value: 
       objectReference: {fileID: 1827488530}
+    - target: {fileID: 4883636031835103955, guid: afd5ed1043b5c4de1854b612496a4512,
+        type: 3}
+      propertyPath: movementSpeed
+      value: 4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: afd5ed1043b5c4de1854b612496a4512, type: 3}

@@ -328,6 +328,7 @@ public class CharacterScript : MonoBehaviour
             t0 = 1;
             initialRotation = transform.rotation;
             moveDestination = target;
+            CameraManager.instance.targetTargetPos = target;
             SetRotationTowardsTarget(target);
             moving = true;
         }
@@ -343,6 +344,7 @@ public class CharacterScript : MonoBehaviour
             rotationSpeed = 1 / rotation90dSec;
             initialRotation = transform.rotation;
             moveDestination = target;
+            CameraManager.instance.targetTargetPos = target;
             SetRotationTowardsTarget(target);
             moving = true;
         }
@@ -358,6 +360,7 @@ public class CharacterScript : MonoBehaviour
             rotationSpeed = 2 / rotation90dSec;
             initialRotation = transform.rotation;
             moveDestination = target;
+            CameraManager.instance.targetTargetPos = target;
             SetRotationTowardsTarget(target);
             moving = true;
         } 
@@ -373,6 +376,7 @@ public class CharacterScript : MonoBehaviour
             rotationSpeed = 2 / rotation90dSec;
             initialRotation = transform.rotation;
             moveDestination = target;
+            CameraManager.instance.targetTargetPos = target;
             SetRotationTowardsTarget(target);
             moving = true;
         } 
@@ -393,9 +397,12 @@ public class CharacterScript : MonoBehaviour
             rotationSpeed = 2 / rotation90dSec;
             initialRotation = transform.rotation;
             moveDestination = target;
+            CameraManager.instance.targetTargetPos = target;
             SetRotationTowardsTarget(target);
             moving = true;
             m_characterAnimation = StartCoroutine(Movement());
+
+            CameraManager.instance.FollowTarget();
         } 
     }
 
@@ -492,7 +499,8 @@ public class CharacterScript : MonoBehaviour
         }
 
         transform.position = target.position;
-        
+        CameraManager.instance.targetTargetPos = transform.position;
+        CameraManager.instance.tUpdatePos = 1;
 
         Vector3 rayOrigin = new Vector3(transform.position.x, transform.position.y+1, transform.position.z);
         Vector3 rayDirection = new Vector3(0,-1,0);

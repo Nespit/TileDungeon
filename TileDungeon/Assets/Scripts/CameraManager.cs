@@ -8,7 +8,7 @@ public class CameraManager : MonoBehaviour
     public static CameraManager instance;
     public Camera mainCamera;
     public Transform target;
-    public Vector3 initialPos, targetPos, rotationTarget, velocity;
+    public Vector3 initialPos, targetPos, rotationTarget, velocity, targetTargetPos;
     Vector3[] offset = new Vector3[4];
     WaitUntil m_cameraMovementCondition;
     Coroutine m_camera;
@@ -23,6 +23,8 @@ public class CameraManager : MonoBehaviour
     Vector3 pointBetweenCameraAndTarget;
     public delegate void TransparencyDelegate(object sender, EventArgs args);
     public event TransparencyDelegate TransparencyEvent;
+    public float boundingBoxSideLength;
+    bool rotating;
 
     void Awake()
 	{
@@ -42,41 +44,59 @@ public class CameraManager : MonoBehaviour
         offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
         offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
         offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
-        targetPos = target.position + offset[offsetIndex];
+        targetPos = targetTargetPos + offset[offsetIndex];
         transform.LookAt(target);
         velocity = Vector3.zero;
 
-        CalculateTransparencyBoundingBoxExtend();
-        CalculateTransparencyBoundingBox();
+        // CalculateDynamicTransparencyBoundingBoxExtend();
+        // CalculateDynamicTransparencyBoundingBox();
+        CalculateStaticTransparencyBohundingBoxExtend(boundingBoxSideLength);
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(transform.position != target.position + offset[offsetIndex] && tUpdatePos > 1 && tUpdatePos > 1)
+        if(transform.position != target.position + offset[offsetIndex])
         {
-            CalculateTransparencyBoundingBox();
+            // CalculateDynamicTransparencyBoundingBox();
+            //CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
         }
     }
     void LateUpdate()
     {
-        targetPos = target.position + offset[offsetIndex];
+        //targetPos = target.position + offset[offsetIndex];
 
-        if(transform.position != target.position + offset[offsetIndex] && tUpdatePos > 1 && tUpdatePos > 1)
-        {
-            initialPos = transform.position;
-            FollowTarget(targetPos);
-        }
+        // if(transform.position != target.position + offset[offsetIndex] && tUpdatePos > 1)
+        // {
+        //     initialPos = transform.position;
+        //     FollowTarget(targetPos);
+        // }
 
         if(tUpdatePos <= 1)
         {
             UpdatePos();
         }
+        else if(rotating)
+            rotating = false;
     }
 
-    void FollowTarget(Vector3 target)
+    void UpdatePos()
     {
-        transform.position = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.3f);
+        tUpdatePos += Time.deltaTime * cameraUpdateSpeed;
+        transform.position = Vector3.Lerp(initialPos, targetTargetPos + offset[offsetIndex], tUpdatePos);
+
+        if(rotating)
+            transform.LookAt(target);
+    }
+
+    public void FollowTarget()
+    {
+        targetPos = targetTargetPos + offset[offsetIndex];
+        tUpdatePos = 0;
+        initialPos = transform.position;
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
+        //transform.position = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.3f);
     }
 
     public void RotateClockwise()
@@ -96,10 +116,15 @@ public class CameraManager : MonoBehaviour
 
         transform.position = target.position + offset[offsetIndex];
         transform.LookAt(target);
-        CalculateTransparencyBoundingBox();
 
         transform.position = originalPos;
         transform.rotation = originalRot;
+
+        targetPos = targetTargetPos + offset[offsetIndex];
+        rotating = true;
+
+        // CalculateDynamicTransparencyBoundingBox();
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
     }
 
     public void RotateCounterClockwise()
@@ -118,22 +143,20 @@ public class CameraManager : MonoBehaviour
 
         transform.position = target.position + offset[offsetIndex];
         transform.LookAt(target);
-        CalculateTransparencyBoundingBox();
 
         transform.position = originalPos;
         transform.rotation = originalRot;
-    }
 
-    void UpdatePos()
-    {
-        tUpdatePos += Time.deltaTime * cameraUpdateSpeed;
-        transform.position = Vector3.Lerp(initialPos, targetPos, tUpdatePos);
-        transform.LookAt(target);
+        targetPos = targetTargetPos + offset[offsetIndex];
+        rotating = true;
+
+        // CalculateDynamicTransparencyBoundingBox();
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
     }
 
     public void ZoomIn()
     {
-        if(zoomIndex == 0 || tUpdatePos <= 1)
+        if(zoomIndex == 0 || tUpdatePos < 1)
             return;
         
         initialPos = transform.position;
@@ -152,15 +175,17 @@ public class CameraManager : MonoBehaviour
         offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
         offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
 
-        m_camera = StartCoroutine(CalculateTransparencyAfterZoomingIn());
-
         transform.position = originalPos;
         transform.rotation = originalRot;
+
+        targetPos = targetTargetPos + offset[offsetIndex];
+
+        m_camera = StartCoroutine(CalculateTransparencyAfterZoomingIn());
     }
 
     public void ZoomOut()
     {
-        if (zoomIndex == 2 || tUpdatePos <= 1)
+        if (zoomIndex == 2 || tUpdatePos < 1)
             return;
 
         initialPos = transform.position;
@@ -180,11 +205,16 @@ public class CameraManager : MonoBehaviour
         offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
         
         //Calculate transparency bounding box extend according to the targeted camera position.
-        CalculateTransparencyBoundingBoxExtend();
-        CalculateTransparencyBoundingBox();
+        transform.position = target.position + offset[offsetIndex];
+        // CalculateDynamicTransparencyBoundingBoxExtend();
+        // CalculateDynamicTransparencyBoundingBox();
+        
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
 
         transform.position = originalPos;
         transform.rotation = originalRot;
+
+        targetPos = targetTargetPos + offset[offsetIndex];
     }
 
     IEnumerator CalculateTransparencyAfterZoomingIn()
@@ -194,24 +224,61 @@ public class CameraManager : MonoBehaviour
         yield return wait;
 
         //Calculate transparency bounding box extend according to the targeted camera position.
-        CalculateTransparencyBoundingBoxExtend();
-        CalculateTransparencyBoundingBox();
+        // CalculateDynamicTransparencyBoundingBoxExtend();
+        // CalculateDynamicTransparencyBoundingBox();
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
 
         m_camera = null;
     }
 
-    void CalculateTransparencyBoundingBoxExtend()
+    void CalculateDynamicTransparencyBoundingBoxExtend()
     {
-        Vector3 pointBelowCamera = new Vector3(transform.position.x, target.position.y, transform.position.z);
-        float distanceToLowpoint = Vector3.Distance(pointBelowCamera, target.position);
+        Transform lowPointTransform = new GameObject().transform;
+        lowPointTransform.position = new Vector3(transform.position.x, target.position.y, transform.position.z);
+        lowPointTransform.rotation = Quaternion.LookRotation(lowPointTransform.position - target.position);
+        lowPointTransform.position += lowPointTransform.forward * 1f;
+        float distanceToLowpoint = Vector3.Distance(lowPointTransform.position, target.position);
         boundingBoxExtend = new Vector3(distanceToLowpoint, distanceToLowpoint, distanceToLowpoint);
     }
 
-    void CalculateTransparencyBoundingBox()
+    void CalculateStaticTransparencyBohundingBoxExtend(float length)
+    {
+        boundingBoxExtend = new Vector3(length, length, length);
+    }
+
+    void CalculateDynamicTransparencyBoundingBox()
     {   
         pointBetweenCameraAndTarget = (transform.position + target.position) / 2;
         pointBetweenCameraAndTarget = new Vector3(pointBetweenCameraAndTarget.x, pointBetweenCameraAndTarget.y-0.2f, pointBetweenCameraAndTarget.z);
+        
+        Transform center = new GameObject().transform;
+        center.position = pointBetweenCameraAndTarget;
+        Vector3 faceAwayFrom = new Vector3(target.position.x, center.position.y, target.position.z);
+        center.rotation = Quaternion.LookRotation(center.position - faceAwayFrom);
+        center.position += center.forward * 0.6f;
+
+        pointBetweenCameraAndTarget = center.position;
+
         transparencyArea = new Bounds(pointBetweenCameraAndTarget, boundingBoxExtend);
+        FireTransparencyCheck();
+    }
+
+    void CalculateStaticTransparencyBoundingBox(float length)
+    {
+        Vector3 originalPos = transform.position;
+        transform.position = targetTargetPos + offset[offsetIndex];
+
+        Transform center = new GameObject().transform;
+        center.position = new Vector3(targetTargetPos.x, targetTargetPos.y + length/4, targetTargetPos.z);
+        Vector3 faceTowards = new Vector3(transform.position.x, center.position.y, transform.position.z);
+        center.LookAt(faceTowards);
+        center.position += center.forward * (length/2 + 0.1f);
+
+        pointBetweenCameraAndTarget = center.position;
+
+        transparencyArea = new Bounds(center.position, boundingBoxExtend);
+
+        transform.position = originalPos;
         FireTransparencyCheck();
     }
 
