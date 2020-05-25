@@ -1,6 +1,6 @@
 Android
 PlayerPath?
-/Users/leonhardp/TileDungeon/TileDungeon/TileDungeonAndroid2.apk
+/Users/leonhardp/TileDungeon/TileDungeon/TileDungeonAndroid3.apk
 SceneListBegin?
 Assets/Scenes/Main.unity
 Assets/Scenes/Level01.unity
@@ -125,18 +125,15 @@ ad9173d3a69d99153f38ed4b62226129 UnityEngine.Networking.dll:UnityEngine.Networki
 9b895dcabbc1faf095c000c32d471fd0 UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformChild
 5887ef1bc706b22b773d253fd443ceef UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformVisualizer
 d251bf88db6c95a6b1aa0b69298da9ef UnityEngine.SpatialTracking.dll:UnityEngine.SpatialTracking.TrackedPoseDriver
-844d90ecc5a83d9e3784e0032e5306c5 Assembly-CSharp.dll:.InputManager
-303ad70ce203ad874efe2965d0fbcff9 Unity.Analytics.Tracker.dll:UnityEngine.Analytics.AnalyticsEventTracker
-7fb9de8dcf73854b6b328eca1f7a6e6d Unity.Analytics.Tracker.dll:UnityEngine.Analytics.AnalyticsTracker
+f1d78d1f881683d12fa04a73daef8c1d Assembly-CSharp.dll:.InputManager
 7e6ed836cbaa230e56d6a2bbae1b9bb5 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessEffectSettings
 b8a5e8091ab0b8861d2add371082c5e0 Unity.TextMeshPro.dll:TMPro.TMP_SpriteAsset
 61b9d9b6f4b6a222dfea8b131b3d3227 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.ChromaticAberration
 0d85f4fda1e0e70cd92c084d12f05cdc Assembly-CSharp.dll:.LookAtScript
 b3ab2106268377ffe25dd18ac23dca28 Unity.TextMeshPro.dll:TMPro.TMP_Asset
-71bb6a6b6c8f052f948db64c7dd3ca4f Unity.Analytics.Editor.dll:UnityEditor.Analytics.AnalyticsEventTrackerEditor
 d6fc8d3165070298511ec776ea575626 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessResources
 71bb6a6b6c8f052f948db64c7dd3ca4f Unity.TextMeshPro.dll:TMPro.TMP_SpriteAnimator
-6c050b04afe1325d3b7c26a28346e23f Assembly-CSharp.dll:.GameManager
+56ae27339f3121bdfdee8c8bdee850ff Assembly-CSharp.dll:.GameManager
 a53651ee3996fbba20dfe0fce02f0b23 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.AutoExposure
 50c443b12ccc0b475183318b5088bcc5 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessDebug
 4fd8bf02e3089425d3502e26c44ba31a Unity.TextMeshPro.dll:TMPro.TextContainer
@@ -173,8 +170,7 @@ fb6a1ea36b4f6ef5948d283d93760765 UnityEngine.GoogleAudioSpatializer.dll:UnityEng
 5b0391b7e3d9ea9db6c0a8fbd0ca23f6 UnityEngine.GoogleAudioSpatializer.dll:UnityEngine.Experimental.Audio.Google.GvrAudioSourceExtension
 a1cd08d5aa6ea226b99acb675bc1466c Assembly-CSharp.dll:.GridManager
 3b760e6526e13f7504f59e210145899a Unity.TextMeshPro.dll:TMPro.TextMeshProUGUI
-507174d46dacbc5fe45e28485db5dd1e Unity.Analytics.DataPrivacy.dll:UnityEngine.Analytics.DataPrivacyButton
-fedc5978d08a98b53541f6c59f0293e0 Assembly-CSharp.dll:.CameraManager
+3acb3a18eb2b75d73630df44fb6b2d61 Assembly-CSharp.dll:.CameraManager
 d251bf88db6c95a6b1aa0b69298da9ef UnityEngine.SpatialTracking.dll:UnityEngine.SpatialTracking.TrackedPoseDriver
 d791aa6007fa3640be1164ea75bb087d Unity.TextMeshPro.dll:TMPro.TMP_StyleSheet
 d5630f96bd5a6a6eed7e1754c3fb8703 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessVolume
@@ -185,3 +181,5 @@ fe6fd24fcef948ae4a3b677d73b271c2 Assembly-CSharp.dll:.CharacterCanvasController
 ac6acd886c54c48c599ab5fed5781ea7 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.AmbientOcclusion
 4ff307b9019f5d11ae8da33f7d7f292e Assembly-CSharp.dll:.TileScript
 8649814970b42d345b89944b862453cc Unity.TextMeshPro.dll:TMPro.TMP_SubMesh
+386622b7a5bdae8643a146231ba5d93f Assembly-CSharp.dll:.MainMenu
+71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.MenuButton

@@ -73,6 +73,9 @@ public class GameManager : MonoBehaviour
 
     IEnumerator OldGame()
     {
+        if(!File.Exists("saves/saveObjects.binary") || !File.Exists("saves/saveGame.binary"))
+            yield break;
+
         DiscardData();
 
         if(SceneManager.sceneCount > 1)
@@ -130,21 +133,21 @@ public class GameManager : MonoBehaviour
         inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
         cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();        
 
-        if (SceneManager.sceneCount < 2)
-        {
-            SceneManager.LoadScene(1, LoadSceneMode.Additive);
-            m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(1).isLoaded);
-            m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(1)));
-        } 
-        else
+        if (SceneManager.sceneCount >= 2)
         {
             SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
+
+            if(mainMenu.gameObject.activeInHierarchy)
+                Menu();
+            
+            gameState = GameState.Game;
+            return;
         }
 
-        if(mainMenu.gameObject.activeInHierarchy)
-            gameState = GameState.MainMenu;
-        else    
-            gameState = GameState.Game;
+        if(!mainMenu.gameObject.activeInHierarchy)
+            Menu();
+
+        gameState = GameState.MainMenu;
     }
 
     // Update is called once per frame
@@ -394,6 +397,9 @@ public class GameManager : MonoBehaviour
 
     public void LoadData()
     {
+        if(!File.Exists("saves/saveObjects.binary") || !File.Exists("saves/saveGame.binary"))
+            return;
+
         BinaryFormatter formatter = new BinaryFormatter();
         FileStream saveObjects = File.Open("saves/saveObjects.binary", FileMode.Open);
 
@@ -423,6 +429,7 @@ public class GameManager : MonoBehaviour
     public void Menu()
     {
         mainMenu.gameObject.SetActive(!mainMenu.gameObject.activeInHierarchy);
+        mainMenu.CheckButtonLayout();
 
         if(mainMenu.gameObject.activeInHierarchy)
             gameState = GameState.MainMenu;

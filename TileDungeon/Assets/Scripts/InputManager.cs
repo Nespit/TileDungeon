@@ -8,10 +8,10 @@ public class InputManager : MonoBehaviour
     CameraManager cameraManager;
     Ray myRay;
     LayerMask layerMaskTile, layerMaskObject;
-    float pinchPreviousDistance, touchDuration, startTime;
+    float pinchStartDistance, touchDuration, startTime;
     Vector2 startPos;
     bool couldBeSwipe;
-    public float minSwipeDist, maxSwipeDist, maxSwipeDuration;
+    public float minSwipeDist, maxSwipeDist, maxSwipeDuration, minPinchDist;
 
     // Start is called before the first frame update
     void Start()
@@ -32,21 +32,21 @@ public class InputManager : MonoBehaviour
 
     void MouseClick()
     {
-        if(Input.GetMouseButtonUp(0)) //0 is the primary mouse button.
+        if (Input.GetMouseButtonUp(0)) //0 is the primary mouse button.
         {
             RaycastHit hit;
-            myRay = cameraManager.mainCamera.ScreenPointToRay(Input.mousePosition); 
-        
-            if(Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
+            myRay = cameraManager.mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
                 character.MoveToLocation(hit.transform.parent.transform.position);
             }
-            else if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+            else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
                 Debug.Log("Hit");
                 character.MoveToLocation(hit.transform.position);
             }
-        }  
+        }
     }
 
     void MouseScroll()
@@ -54,10 +54,10 @@ public class InputManager : MonoBehaviour
         // if(Input.mouseScrollDelta.y != 0)
         //     cameraManager.Zoom(Input.mouseScrollDelta.y);
 
-        if(Input.mouseScrollDelta.y < 0)
+        if (Input.mouseScrollDelta.y < 0)
             CameraManager.instance.ZoomOut();
 
-        else if(Input.mouseScrollDelta.y > 0)
+        else if (Input.mouseScrollDelta.y > 0)
             CameraManager.instance.ZoomIn();
     }
 
@@ -67,91 +67,105 @@ public class InputManager : MonoBehaviour
         {
             Touch[] touch = new Touch[Input.touchCount];
 
-            for(int i = 0; i < Input.touchCount; ++i)
+            for (int i = 0; i < Input.touchCount; ++i)
             {
                 touch[i] = Input.GetTouch(i);
             }
 
-            if(Input.touchCount > 1)
+            if (Input.touchCount > 1)
             {
-                float pinchCurrentDistance = Vector2.Distance(touch[0].position, touch[1].position);
-
-                if (pinchCurrentDistance > pinchPreviousDistance)
+                if (touch[1].phase == TouchPhase.Began)
                 {
-                    CameraManager.instance.ZoomOut();
-                } 
-                else if (pinchCurrentDistance < pinchPreviousDistance)
-                {
-                    CameraManager.instance.ZoomIn();
+                    pinchStartDistance = Vector2.Distance(touch[0].position, touch[1].position);
+                    couldBeSwipe = false;
                 }
 
-                pinchPreviousDistance = pinchCurrentDistance;
-            }
-            else if(touch[0].phase == TouchPhase.Began)
-            {
-                couldBeSwipe = true;
-                startPos = touch[0].position;
-                startTime = Time.time;
-            }
-            else if(touch[0].phase == TouchPhase.Moved)
-            {
-                float swipeDuration = Time.time - startTime;
+                float pinchCurrentDistance = Vector2.Distance(touch[0].position, touch[1].position);
 
-                if (Mathf.Abs(touch[0].position.x - startPos.x) > maxSwipeDist || swipeDuration > maxSwipeDuration) 
+                if (Mathf.Abs(pinchCurrentDistance - pinchStartDistance) > minPinchDist)
+                {
+                    if (pinchCurrentDistance < pinchStartDistance)
+                    {
+                        pinchStartDistance = Vector2.Distance(touch[0].position, touch[1].position);
+                        CameraManager.instance.ZoomOut();
+                    }
+                    else if (pinchCurrentDistance < pinchStartDistance)
+                    {
+                        pinchStartDistance = Vector2.Distance(touch[0].position, touch[1].position);
+                        CameraManager.instance.ZoomIn();
+                    }
+                }
+            }
+            else
+            {
+                if (touch[0].phase == TouchPhase.Began)
+                {
+                    couldBeSwipe = true;
+                    startPos = touch[0].position;
+                    startTime = Time.time;
+                }
+                else if (touch[0].phase == TouchPhase.Moved)
+                {
+                    float swipeDuration = Time.time - startTime;
+
+                    if (Mathf.Abs(touch[0].position.x - startPos.x) > maxSwipeDist || swipeDuration > maxSwipeDuration)
+                    {
+                        couldBeSwipe = false;
+                    }
+                }
+                else if (touch[0].phase == TouchPhase.Stationary)
                 {
                     couldBeSwipe = false;
                 }
-            }
-            else if(touch[0].phase == TouchPhase.Stationary)
-            {
-                couldBeSwipe = false;
-            }
-            else if(touch[0].phase == TouchPhase.Ended)
-            {
-                if(couldBeSwipe)
+                else if (touch[0].phase == TouchPhase.Ended)
                 {
-                    float swipeDuration = Time.time - startTime;
-                    float swipeDist = (touch[0].position - startPos).magnitude;
+                    if (couldBeSwipe)
+                    {
+                        float swipeDuration = Time.time - startTime;
+                        float swipeDist = (touch[0].position - startPos).magnitude;
 
-                    if ((swipeDuration < maxSwipeDuration) && (swipeDist > minSwipeDist)) 
+                        if ((swipeDuration < maxSwipeDuration) && (swipeDist > minSwipeDist))
+                        {
+                            // It's a swiiiiiiiiiiiipe!
+                            float swipeDirection = Mathf.Sign(touch[0].position.x - startPos.x);
+
+                            // Do something here in reaction to the swipe.
+                            if (swipeDirection > 0)
+                                CameraManager.instance.RotateCounterClockwise();
+                            else if (swipeDirection < 0)
+                                CameraManager.instance.RotateClockwise();
+                        }
+                    }
+
+                    else
                     {
-                        // It's a swiiiiiiiiiiiipe!
-                        float swipeDirection = Mathf.Sign(touch[0].position.x - startPos.x);
-                   
-                        // Do something here in reaction to the swipe.
-                        if (swipeDirection > 0)
-                            CameraManager.instance.RotateCounterClockwise();
-                        else if(swipeDirection < 0)
-                            CameraManager.instance.RotateClockwise();
+                        RaycastHit hit;
+                        myRay = cameraManager.mainCamera.ScreenPointToRay(touch[0].position);
+
+                        if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
+                        {
+                            character.MoveToLocation(hit.transform.parent.transform.position);
+                        }
+                        else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
+                        {
+                            character.MoveToLocation(hit.transform.position);
+                        }
                     }
                 }
-                
-                else
-                {
-                    RaycastHit hit;
-                    myRay = cameraManager.mainCamera.ScreenPointToRay(touch[0].position); 
-                
-                    if(Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
-                    {
-                        character.MoveToLocation(hit.transform.parent.transform.position);
-                    }
-                    else if(Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
-                    {
-                        character.MoveToLocation(hit.transform.position);
-                    }
-                }
-            } 
-        } 
+            }
+
+
+        }
     }
 
     void Keyboard()
     {
-        if(Input.GetKeyUp(KeyCode.LeftArrow))
+        if (Input.GetKeyUp(KeyCode.LeftArrow))
         {
             cameraManager.RotateCounterClockwise();
         }
-        
-        if(Input.GetKeyUp(KeyCode.RightArrow))
+
+        if (Input.GetKeyUp(KeyCode.RightArrow))
         {
             cameraManager.RotateClockwise();
         }

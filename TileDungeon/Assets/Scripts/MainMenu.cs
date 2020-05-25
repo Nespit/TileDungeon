@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.IO;
 
 public class MainMenu : MonoBehaviour
 {
-    public Button newGameButton, continueButton, resumeButton, exitButton;
+    public Button newGameButton, continueButton, resumeButton, saveButton, loadButton, exitButton;
     public static MainMenu instance;
     
     void Awake()
@@ -19,7 +21,26 @@ public class MainMenu : MonoBehaviour
 	}
     void Start()
     {
-        
+        CheckButtonLayout();
+    }
+
+    public void CheckButtonLayout()
+    {
+        if(File.Exists("saves/saveObjects.binary") && File.Exists("saves/saveGame.binary"))
+            loadButton.gameObject.SetActive(true);
+        else
+            loadButton.gameObject.SetActive(false);
+
+        if(SceneManager.sceneCount < 2)
+        {
+            saveButton.gameObject.SetActive(false);
+            resumeButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            saveButton.gameObject.SetActive(true);
+            resumeButton.gameObject.SetActive(true);
+        }
     }
 
     public void NewGame()
