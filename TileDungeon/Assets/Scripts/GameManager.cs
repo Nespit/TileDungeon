@@ -41,6 +41,41 @@ public class GameManager : MonoBehaviour
             filePath = Application.persistentDataPath + "/SaveFiles/";
 	}
 
+    void Start()
+    {
+        SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
+
+        InitializeSceneList();
+        PrepareTileDictionary();
+
+        playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
+        inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
+        cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();        
+
+        if (SceneManager.sceneCount >= 2)
+        {
+            SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
+
+            if(mainMenu.gameObject.activeInHierarchy)
+                Menu();
+            
+            gameState = GameState.Game;
+            return;
+        }
+
+        if(!mainMenu.gameObject.activeInHierarchy)
+            Menu();
+
+        gameState = GameState.MainMenu;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(gameState == GameState.Game)
+            inputManager.ProcessInput();
+    }
+
     IEnumerator NewGame()
     {
         DiscardData();
@@ -127,42 +162,6 @@ public class GameManager : MonoBehaviour
     {
         m_setSceneActive = StartCoroutine(NewGame());
     }
-
-    void Start()
-    {
-        SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
-
-        InitializeSceneList();
-        PrepareTileDictionary();
-
-        playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
-        inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
-        cameraManager = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraManager>();        
-
-        if (SceneManager.sceneCount >= 2)
-        {
-            SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
-
-            if(mainMenu.gameObject.activeInHierarchy)
-                Menu();
-            
-            gameState = GameState.Game;
-            return;
-        }
-
-        if(!mainMenu.gameObject.activeInHierarchy)
-            Menu();
-
-        gameState = GameState.MainMenu;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(gameState == GameState.Game)
-            inputManager.ProcessInput();
-    }
-
     IEnumerator SetSceneActive(Scene scene)
     {
         yield return m_setSceneActiveCondition;
@@ -217,6 +216,7 @@ public class GameManager : MonoBehaviour
         else   
             InitializeSceneList();
 
+        CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         IsSceneBeingLoaded = false;
         // foreach(GameObject g in scene.GetRootGameObjects())
         // {

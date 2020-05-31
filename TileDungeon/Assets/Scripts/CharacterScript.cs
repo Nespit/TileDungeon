@@ -514,6 +514,7 @@ public class CharacterScript : MonoBehaviour
             transform.position = new Vector3(transform.position.x, hit.point.y + offsetY.y, transform.position.z);
         }
 
+        CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         m_characterAnimation = null;
     }
 

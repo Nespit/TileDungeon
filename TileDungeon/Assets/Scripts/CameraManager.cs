@@ -282,6 +282,11 @@ public class CameraManager : MonoBehaviour
         FireTransparencyCheck();
     }
 
+    public void UpdateStaticTransparencyBoundingBox()
+    {
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
+    }
+
     public bool UpdateFinished()
     {
         if(tUpdatePos > 1)
