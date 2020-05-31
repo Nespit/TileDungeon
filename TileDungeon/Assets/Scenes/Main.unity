@@ -360,10 +360,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad4e5ea4533d34217b3c2c00fc617497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minSwipeDist: 1
-  maxSwipeDist: 1000
-  maxSwipeDuration: 100
-  minPinchDist: 10
+  minSwipeDist: 3
+  maxSwipeDist: 40
+  maxSwipeDuration: 0.5
+  minPinchDist: 20
 --- !u!4 &211963543
 Transform:
   m_ObjectHideFlags: 0
@@ -1339,6 +1339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1921ff978f4df4b04aa9e6651d80ee09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  filePath: 
   savedLists: []
   savedGameData:
     SceneID: 0

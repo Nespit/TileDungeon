@@ -9,6 +9,7 @@ using System.IO;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance = null;
+    public string filePath;
     CharacterScript playerCharacter;
     InputManager inputManager;
     CameraManager cameraManager;
@@ -33,6 +34,11 @@ public class GameManager : MonoBehaviour
 			Destroy(gameObject);    
 		}
 		DontDestroyOnLoad(gameObject);
+
+        if(Application.platform == RuntimePlatform.Android)
+            filePath = Application.persistentDataPath + "/TileDungeon/SaveFiles/";
+        else
+            filePath = Application.persistentDataPath + "/SaveFiles/";
 	}
 
     IEnumerator NewGame()
@@ -73,7 +79,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator OldGame()
     {
-        if(!File.Exists("saves/saveObjects.binary") || !File.Exists("saves/saveGame.binary"))
+        if(!File.Exists(filePath + "saveObjects.binary") || !File.Exists(filePath + "saveGame.binary"))
             yield break;
 
         DiscardData();
@@ -174,21 +180,21 @@ public class GameManager : MonoBehaviour
                 switch(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].objectType)
                 {
                     case InteractableObjectType.door:
-                        Debug.Log("Spawn door");
+                        //Debug.Log("Spawn door");
                         spawnedObject = Instantiate(doorPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
                         break;
                     case InteractableObjectType.coin:
-                        Debug.Log("Spawn coin");
+                        //Debug.Log("Spawn coin");
                         spawnedObject = Instantiate(coinPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
                         break;
                     case InteractableObjectType.key:
-                        Debug.Log("Spawn key");
+                        //Debug.Log("Spawn key");
                         spawnedObject = Instantiate(keyPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
@@ -199,12 +205,12 @@ public class GameManager : MonoBehaviour
 
             for (int i = 0; i < localListOfSceneObjectsToLoad.SavedCharacters.Count; i++)
             {
-                Debug.Log("Spawn character");
+                //Debug.Log("Spawn character");
                 spawnedObject = Instantiate(enemyPrefab,
                                             localListOfSceneObjectsToLoad.SavedCharacters[i].position,
                                             localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
                 spawnedObject.GetComponent<CharacterScript>().SetCurrentHealth(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
-                Debug.Log(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
+                //Debug.Log(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
                 spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
             }
         }
@@ -310,7 +316,7 @@ public class GameManager : MonoBehaviour
     {
         if (savedLists == null)
         {
-            print("Saved lists was null");
+            //print("Saved lists was null");
             savedLists = new List<SavedListsPerScene>();
         }
 
@@ -322,7 +328,7 @@ public class GameManager : MonoBehaviour
             if (savedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
             {
                 found = true;
-                print("Scene was found in saved lists!");
+                //print("Scene was found in saved lists!");
             }
         }
 
@@ -332,7 +338,7 @@ public class GameManager : MonoBehaviour
             SavedListsPerScene newList = new SavedListsPerScene(SceneManager.GetActiveScene().buildIndex);
             savedLists.Add(newList);
 
-            print("Created new list!");
+            //print("Created new list!");
         }
     }
 
@@ -357,7 +363,7 @@ public class GameManager : MonoBehaviour
         }
         
 
-        print("Total list count: " + savedLists.Count.ToString() + " , not found index: " + SceneManager.GetActiveScene().buildIndex.ToString());
+        //print("Total list count: " + savedLists.Count.ToString() + " , not found index: " + SceneManager.GetActiveScene().buildIndex.ToString());
         return null;
     }
 
@@ -373,47 +379,47 @@ public class GameManager : MonoBehaviour
 
     public void SaveData()
     {
-        if (!Directory.Exists("Saves"))
-            Directory.CreateDirectory("Saves");
+        if (!Directory.Exists(filePath))
+            Directory.CreateDirectory(filePath);
 
         FireSaveEvent();  
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream saveObjects = File.Create("saves/saveObjects.binary");
+        FileStream saveObjects = File.Create(filePath + "saveObjects.binary");
 
         formatter.Serialize(saveObjects, savedLists);
 
         saveObjects.Close();
 
 
-        saveObjects = File.Create("saves/saveGame.binary");
+        saveObjects = File.Create(filePath + "saveGame.binary");
 
         formatter.Serialize(saveObjects, savedGameData);
         
         saveObjects.Close();
 
-        print("Saved!");
+        //print("Saved!");
     }
 
     public void LoadData()
     {
-        if(!File.Exists("saves/saveObjects.binary") || !File.Exists("saves/saveGame.binary"))
+        if(!File.Exists(filePath + "saveObjects.binary") || !File.Exists(filePath + "saveGame.binary"))
             return;
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream saveObjects = File.Open("saves/saveObjects.binary", FileMode.Open);
+        FileStream saveObjects = File.Open(filePath + "saveObjects.binary", FileMode.Open);
 
         savedLists = (List<SavedListsPerScene>)formatter.Deserialize(saveObjects);
     
         saveObjects.Close();
 
-        saveObjects = File.Open("saves/saveGame.binary", FileMode.Open);
+        saveObjects = File.Open(filePath + "saveGame.binary", FileMode.Open);
 
         savedGameData = (SavedDataPerGame)formatter.Deserialize(saveObjects);
     
         saveObjects.Close();
 
-        print("Loaded");
+        //print("Loaded");
     }
 
     public void DiscardData()

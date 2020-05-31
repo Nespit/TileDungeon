@@ -284,7 +284,7 @@ public class CharacterScript : MonoBehaviour
             }
             if(t.tag == "StairDown")
             {
-                Debug.Log("Down");
+                //Debug.Log("Down");
                 moving = true;
                 StartMoveToNextScene();
             }

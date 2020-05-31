@@ -1,6 +1,6 @@
 Android
 PlayerPath?
-/Users/leonhardp/TileDungeon/TileDungeon/TileDungeonAndroid3.apk
+/Users/leonhardp/TileDungeon/TileDungeon/TileDungeonAndroid9.apk
 SceneListBegin?
 Assets/Scenes/Main.unity
 Assets/Scenes/Level01.unity
@@ -131,9 +131,11 @@ b8a5e8091ab0b8861d2add371082c5e0 Unity.TextMeshPro.dll:TMPro.TMP_SpriteAsset
 61b9d9b6f4b6a222dfea8b131b3d3227 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.ChromaticAberration
 0d85f4fda1e0e70cd92c084d12f05cdc Assembly-CSharp.dll:.LookAtScript
 b3ab2106268377ffe25dd18ac23dca28 Unity.TextMeshPro.dll:TMPro.TMP_Asset
+71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.MenuButton
+386622b7a5bdae8643a146231ba5d93f Assembly-CSharp.dll:.MainMenu
 d6fc8d3165070298511ec776ea575626 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessResources
 71bb6a6b6c8f052f948db64c7dd3ca4f Unity.TextMeshPro.dll:TMPro.TMP_SpriteAnimator
-56ae27339f3121bdfdee8c8bdee850ff Assembly-CSharp.dll:.GameManager
+eda24424df2eabe3c748a01ed827640a Assembly-CSharp.dll:.GameManager
 a53651ee3996fbba20dfe0fce02f0b23 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.AutoExposure
 50c443b12ccc0b475183318b5088bcc5 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.PostProcessDebug
 4fd8bf02e3089425d3502e26c44ba31a Unity.TextMeshPro.dll:TMPro.TextContainer
@@ -181,5 +183,3 @@ fe6fd24fcef948ae4a3b677d73b271c2 Assembly-CSharp.dll:.CharacterCanvasController
 ac6acd886c54c48c599ab5fed5781ea7 Unity.Postprocessing.Runtime.dll:UnityEngine.Rendering.PostProcessing.AmbientOcclusion
 4ff307b9019f5d11ae8da33f7d7f292e Assembly-CSharp.dll:.TileScript
 8649814970b42d345b89944b862453cc Unity.TextMeshPro.dll:TMPro.TMP_SubMesh
-386622b7a5bdae8643a146231ba5d93f Assembly-CSharp.dll:.MainMenu
-71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.MenuButton

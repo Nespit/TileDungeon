@@ -43,7 +43,7 @@ public class InputManager : MonoBehaviour
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
-                Debug.Log("Hit");
+                //Debug.Log("Hit");
                 character.MoveToLocation(hit.transform.position);
             }
         }
@@ -84,7 +84,7 @@ public class InputManager : MonoBehaviour
 
                 if (Mathf.Abs(pinchCurrentDistance - pinchStartDistance) > minPinchDist)
                 {
-                    if (pinchCurrentDistance < pinchStartDistance)
+                    if (pinchCurrentDistance > pinchStartDistance)
                     {
                         pinchStartDistance = Vector2.Distance(touch[0].position, touch[1].position);
                         CameraManager.instance.ZoomOut();
@@ -108,26 +108,32 @@ public class InputManager : MonoBehaviour
                 {
                     float swipeDuration = Time.time - startTime;
 
-                    if (Mathf.Abs(touch[0].position.x - startPos.x) > maxSwipeDist || swipeDuration > maxSwipeDuration)
+                    if (Mathf.Abs(touch[0].position.y - startPos.y) > maxSwipeDist || swipeDuration > maxSwipeDuration)
                     {
                         couldBeSwipe = false;
                     }
                 }
                 else if (touch[0].phase == TouchPhase.Stationary)
                 {
-                    couldBeSwipe = false;
+                    // couldBeSwipe = false;
+                    // Debug.Log("swipe interupted in stationary phase");
                 }
                 else if (touch[0].phase == TouchPhase.Ended)
                 {
+                    Debug.Log("could be swipe == " + couldBeSwipe);
+
                     if (couldBeSwipe)
                     {
                         float swipeDuration = Time.time - startTime;
-                        float swipeDist = (touch[0].position - startPos).magnitude;
+                        float swipeDist = Mathf.Abs(touch[0].position.y - startPos.y);
+                        
+                        Debug.Log("swipe duration == " + swipeDuration);
+                        Debug.Log("swipe distance == " + swipeDist);
 
                         if ((swipeDuration < maxSwipeDuration) && (swipeDist > minSwipeDist))
                         {
                             // It's a swiiiiiiiiiiiipe!
-                            float swipeDirection = Mathf.Sign(touch[0].position.x - startPos.x);
+                            float swipeDirection = touch[0].position.y - startPos.y;
 
                             // Do something here in reaction to the swipe.
                             if (swipeDirection > 0)

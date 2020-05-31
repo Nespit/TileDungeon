@@ -26,7 +26,7 @@ public class MainMenu : MonoBehaviour
 
     public void CheckButtonLayout()
     {
-        if(File.Exists("saves/saveObjects.binary") && File.Exists("saves/saveGame.binary"))
+        if(File.Exists(GameManager.instance.filePath + "saveObjects.binary") && File.Exists(GameManager.instance.filePath + "saveGame.binary"))
             loadButton.gameObject.SetActive(true);
         else
             loadButton.gameObject.SetActive(false);
