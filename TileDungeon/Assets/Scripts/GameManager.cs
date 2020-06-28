@@ -73,7 +73,10 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if(gameState == GameState.Game)
+        {
+            TurnManager.instance.Turn();
             inputManager.ProcessInput();
+        }      
     }
 
     IEnumerator NewGame()

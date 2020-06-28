@@ -24,7 +24,7 @@ public class InputManager : MonoBehaviour
     }
 
     public void ProcessInput()
-    {
+    {   
         if(Application.platform == RuntimePlatform.Android)
             Touch();
         else
@@ -37,6 +37,9 @@ public class InputManager : MonoBehaviour
 
     void MouseClick()
     {
+        if(character.turnFinished)
+            return;
+
         if (Input.GetMouseButtonUp(0)) //0 is the primary mouse button.
         {
             RaycastHit hit;
@@ -152,6 +155,9 @@ public class InputManager : MonoBehaviour
                     
                     if (!isSwipe && swipeDist < pressMaxDistance)
                     {
+                        if(character.turnFinished)
+                            return;
+
                         Debug.Log("Press executed");
                         RaycastHit hit;
                         myRay = cameraManager.mainCamera.ScreenPointToRay(touch[0].position);
@@ -167,8 +173,6 @@ public class InputManager : MonoBehaviour
                     }
                 }
             }
-
-
         }
     }
 

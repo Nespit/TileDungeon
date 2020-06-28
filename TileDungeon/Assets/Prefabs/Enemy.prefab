@@ -543,8 +543,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hasKey: 0
   coinsTilWin: 0
-  movementSpeed: 2
-  attackSpeed: 4
+  movementSpeed: 4
+  attackSpeed: 6
   rotation90dSec: 0.25
   coinCounter: {fileID: 0}
   winAnnouncement: {fileID: 0}
@@ -553,8 +553,12 @@ MonoBehaviour:
   currentHealth: 0
   attackStrength: 10
   defenseStrength: 5
-  dontReload: 0
+  dontReload: 1
   characterAnimator: {fileID: 0}
+  maxActionPoints: 1
+  currentActionPoints: 0
+  turnOrderRating: 1
+  turnFinished: 0
 --- !u!1 &4635871975307781722
 GameObject:
   m_ObjectHideFlags: 0
