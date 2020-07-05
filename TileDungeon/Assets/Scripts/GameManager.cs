@@ -54,7 +54,8 @@ public class GameManager : MonoBehaviour
 
         if (SceneManager.sceneCount >= 2)
         {
-            SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
+            //SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
+            m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneAt(1)));
 
             if(mainMenu.gameObject.activeInHierarchy)
                 Menu();
@@ -85,6 +86,7 @@ public class GameManager : MonoBehaviour
 
         if(SceneManager.sceneCount > 1)
         {
+            playerCharacter.transform.parent = transform;
             Scene scene = SceneManager.GetActiveScene();
 
             m_setSceneActiveCondition = new WaitUntil(() => !scene.isLoaded);
@@ -124,6 +126,7 @@ public class GameManager : MonoBehaviour
 
         if(SceneManager.sceneCount > 1)
         {
+            playerCharacter.transform.parent = transform;
             Scene scene = SceneManager.GetActiveScene();
 
             m_setSceneActiveCondition = new WaitUntil(() => !scene.isLoaded);
@@ -207,12 +210,16 @@ public class GameManager : MonoBehaviour
 
             for (int i = 0; i < localListOfSceneObjectsToLoad.SavedCharacters.Count; i++)
             {
-                //Debug.Log("Spawn character");
                 spawnedObject = Instantiate(enemyPrefab,
                                             localListOfSceneObjectsToLoad.SavedCharacters[i].position,
                                             localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
-                spawnedObject.GetComponent<CharacterScript>().SetCurrentHealth(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
-                //Debug.Log(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
+                var script = spawnedObject.GetComponent<CharacterScript>();
+                script.SetCurrentHealth(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
+                script.maxHealth = localListOfSceneObjectsToLoad.SavedCharacters[i].maxHealth;
+                script.maxActionPoints = localListOfSceneObjectsToLoad.SavedCharacters[i].maxActionPoints;
+                script.turnOrderRating = localListOfSceneObjectsToLoad.SavedCharacters[i].turnOrderRating;
+                script.attackStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].attackStrength;
+                script.defenseStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].defenseStrength;
                 spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
             }
         }
@@ -221,6 +228,7 @@ public class GameManager : MonoBehaviour
 
         CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         IsSceneBeingLoaded = false;
+        
         // foreach(GameObject g in scene.GetRootGameObjects())
         // {
         //     g.SetActive (true);
@@ -275,46 +283,6 @@ public class GameManager : MonoBehaviour
         currentSceneTiles = new Dictionary<float, Transform>();
     }
 
-    // public void MoveToPreviousScene()
-    // {
-    //     int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-
-    //     if(currentSceneIndex <= 1)
-    //     {
-    //         return;
-    //     }
-            
-    //     if(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded)
-    //     {
-    //         foreach(GameObject g in SceneManager.GetActiveScene().GetRootGameObjects())
-    //         {
-    //             g.SetActive (false);
-    //         }
-
-    //         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
-
-    //         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1));
-
-    //         foreach(GameObject g in SceneManager.GetActiveScene().GetRootGameObjects())
-    //         {
-    //             g.SetActive (true);
-    //         }
-    //     }
-
-    //     else
-    //     {
-    //         foreach(GameObject g in SceneManager.GetActiveScene().GetRootGameObjects())
-    //         {
-    //             g.SetActive (false);
-    //         }
-
-
-    //         SceneManager.LoadScene(currentSceneIndex-1, LoadSceneMode.Additive);
-    //         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
-    //         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1)));
-    //     }
-    // }
-
     public void InitializeSceneList()
     {
         if (savedLists == null)
@@ -331,7 +299,6 @@ public class GameManager : MonoBehaviour
             if (savedLists[i].SceneID == SceneManager.GetActiveScene().buildIndex)
             {
                 found = true;
-                //print("Scene was found in saved lists!");
             }
         }
 
@@ -340,8 +307,6 @@ public class GameManager : MonoBehaviour
         {           
             SavedListsPerScene newList = new SavedListsPerScene(SceneManager.GetActiveScene().buildIndex);
             savedLists.Add(newList);
-
-            //print("Created new list!");
         }
     }
 
@@ -364,9 +329,7 @@ public class GameManager : MonoBehaviour
                     return savedLists[i];
             }
         }
-        
 
-        //print("Total list count: " + savedLists.Count.ToString() + " , not found index: " + SceneManager.GetActiveScene().buildIndex.ToString());
         return null;
     }
 
@@ -400,8 +363,6 @@ public class GameManager : MonoBehaviour
         formatter.Serialize(saveObjects, savedGameData);
         
         saveObjects.Close();
-
-        //print("Saved!");
     }
 
     public void LoadData()
@@ -421,8 +382,6 @@ public class GameManager : MonoBehaviour
         savedGameData = (SavedDataPerGame)formatter.Deserialize(saveObjects);
     
         saveObjects.Close();
-
-        //print("Loaded");
     }
 
     public void DiscardData()

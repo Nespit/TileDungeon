@@ -37,7 +37,7 @@ public class InputManager : MonoBehaviour
 
     void MouseClick()
     {
-        if(character.turnFinished)
+        if(!character.turnActive)
             return;
 
         if (Input.GetMouseButtonUp(0)) //0 is the primary mouse button.
@@ -155,7 +155,7 @@ public class InputManager : MonoBehaviour
                     
                     if (!isSwipe && swipeDist < pressMaxDistance)
                     {
-                        if(character.turnFinished)
+                        if(!character.turnActive)
                             return;
 
                         Debug.Log("Press executed");

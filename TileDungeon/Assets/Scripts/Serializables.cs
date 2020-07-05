@@ -28,12 +28,24 @@ public class SavedCharacter
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
     public int currentHealth;
-    public SavedCharacter(float tileID, Vector3 position, Quaternion rotation, int currentHealth)
+    public int maxHealth;
+    public int attackStrength;
+    public int defenseStrength;
+    public int maxActionPoints; 
+    public int turnOrderRating; 
+
+    public SavedCharacter(float tileID, Vector3 position, Quaternion rotation, int currentHealth, 
+                          int maxHealth, int attackStrength, int defenseStrength, int maxActionPoints, int turnOrderRating)
     {
         this.tileID = tileID;
         this.position = position;
         this.rotation = rotation;
         this.currentHealth = currentHealth;
+        this.maxHealth = maxHealth;
+        this.attackStrength = attackStrength;
+        this.defenseStrength = defenseStrength;
+        this.maxActionPoints = maxActionPoints;
+        this.turnOrderRating = turnOrderRating;
     }
 }
 

@@ -69,8 +69,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0.9506, y: 0.9287}
+  m_AnchoredPosition: {x: 0, y: -30}
+  m_SizeDelta: {x: 100, y: 18.52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4883636031483509112
 CanvasRenderer:
@@ -139,7 +139,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4883636031835103966}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.315, z: 0}
+  m_LocalPosition: {x: 0, y: 0.26, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4883636031655710267}
@@ -158,6 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23b111109c705474d9d2d06ec04b2d14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  offsetY: 0.26
   hasKey: 0
   coinsTilWin: 4
   movementSpeed: 4
@@ -175,7 +176,7 @@ MonoBehaviour:
   maxActionPoints: 3
   currentActionPoints: 0
   turnOrderRating: 1
-  turnFinished: 0
+  turnActive: 0
 --- !u!65 &4883636031835103952
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -238,11 +239,11 @@ RectTransform:
   m_Father: {fileID: 4883636032197572536}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -52.3}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 10}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &4883636032197572537
 GameObject:
   m_ObjectHideFlags: 0

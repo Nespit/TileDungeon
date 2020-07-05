@@ -8,8 +8,8 @@ public class CharacterScript : MonoBehaviour
 {
     //underastand difference between abstract interfaces and inheritance from classes, multiple static levels, lateral movement, second enemy type 
     
-    Vector3 currentDirection;
-    Vector3 moveDestination, initialPos, offsetY;
+    public float offsetY;
+    Vector3 moveDestination, initialPos;
     Quaternion targetRotation;
     Quaternion initialRotation;
     int layerMaskTile, layerMaskObject;
@@ -41,7 +41,7 @@ public class CharacterScript : MonoBehaviour
     public int maxActionPoints = 1;
     public int currentActionPoints; 
     public int turnOrderRating = 1; 
-    public bool turnFinished = true;
+    public bool turnActive = false;
 
     void Awake()
     {
@@ -51,12 +51,10 @@ public class CharacterScript : MonoBehaviour
 
     void Start()
     {
-        currentDirection = transform.position;
         targetRotation = transform.rotation;
         layerMaskTile = LayerMask.GetMask("Tiles");
         layerMaskObject = LayerMask.GetMask("Objects");
         m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
-        offsetY = new Vector3(0, transform.position.y, 0);
         currentActionPoints = maxActionPoints;
         TurnManager.instance.TurnEvent += TurnOrderAssignment;
 
@@ -71,15 +69,14 @@ public class CharacterScript : MonoBehaviour
             if(localListOfSceneObjectsToLoad != null && dontReload)
                 Destroy(gameObject);
         }
-        else
-        {
-            myRay = new Ray(new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z), new Vector3(0,-1,0));
-            RaycastHit hit;
 
-            if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
-            {
-                transform.parent = hit.transform;
-            }
+        myRay = new Ray(new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z), new Vector3(0,-1,0));
+        RaycastHit hit;
+
+        if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
+        {
+            transform.parent = hit.transform;
+            transform.position = new Vector3(hit.transform.position.x, hit.transform.position.y + offsetY, hit.transform.position.z);
         }
     }
 
@@ -95,15 +92,19 @@ public class CharacterScript : MonoBehaviour
     {
         float tileID = transform.parent.GetComponent<TileScript>().tileID;
 
-        SavedCharacter savedCharacter = new SavedCharacter(tileID, transform.position, transform.rotation, currentHealth);
+        SavedCharacter savedCharacter = new SavedCharacter(tileID, transform.position, transform.rotation, currentHealth, 
+                                                           maxHealth, attackStrength, defenseStrength, maxActionPoints, turnOrderRating);
 
         GameManager.instance.GetListForScene().SavedCharacters.Add(savedCharacter);
     }
 
     public void TurnOrderAssignment(object sender, EventArgs args)
     {
-        currentActionPoints = maxActionPoints;
-        TurnManager.instance.rawTurnQueue.Add(this);
+        if(gameObject.activeSelf)
+        {
+            currentActionPoints = maxActionPoints;
+            TurnManager.instance.rawTurnQueue.Add(this);
+        }
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -119,7 +120,7 @@ public class CharacterScript : MonoBehaviour
 
        if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
         {
-            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY.y, transform.position.z);
+            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
             moveDestination = new Vector3(moveDestination.x, transform.position.y, moveDestination.z);
         }
     }
@@ -296,24 +297,24 @@ public class CharacterScript : MonoBehaviour
                     return false;
                 }  
             }
-            if (t.tag == "Enemy")
+            if (t.tag == "Enemy" && gameObject.tag == "PlayerCharacter")
             {
                 CharacterScript enemy = t.GetComponent<CharacterScript>();
                 Attack(enemy);
                 return false;
             }
-            if (t.tag == "PlayerCharacter" && gameObject.tag != "PlayerCharacter")
+            if (t.tag == "PlayerCharacter" && gameObject.tag == "Enemy")
             {
                 CharacterScript enemy = t.GetComponent<CharacterScript>();
                 Attack(enemy);
                 return false;
             }
-            if(t.tag == "StairUp")
+            if(t.tag == "StairUp" && gameObject.tag == "PlayerCharacter")
             {
                 moving = true;
                 StartMoveToPreviousScene();
             }
-            if(t.tag == "StairDown")
+            if(t.tag == "StairDown" && gameObject.tag == "PlayerCharacter")
             {
                 //Debug.Log("Down");
                 moving = true;
@@ -450,20 +451,20 @@ public class CharacterScript : MonoBehaviour
             return;   
         }
         
-        target = target+offsetY;
+        target = new Vector3(target.x, target.y+offsetY, target.z);
 
         if(target == transform.position)
         {
             return;
         }
 
-        if (gameObject.tag == "Enemy")
-        {
-            --currentActionPoints;
-        }
-
         if(AttemptMove(target))
         {
+            if (gameObject.tag == "Enemy")
+            {
+                --currentActionPoints;
+            }
+
             myRay = new Ray(new Vector3(target.x, target.y + 1f, target.z), new Vector3(0,-1,0));
             RaycastHit hit;
 
@@ -486,21 +487,22 @@ public class CharacterScript : MonoBehaviour
                 CameraManager.instance.targetTargetPos = target;
                 CameraManager.instance.FollowTarget();
             }
-        } 
+        }
     }
 
     
 
     public void Attack(CharacterScript target)
     {
-        if(gameObject.tag != "Enemy")
+        if(gameObject.tag == "PlayerCharacter")
         {
             if(turnFinishedCheck())
             {
                 return;   
             }
         }
-                
+        
+        --currentActionPoints;
         Vector3 targetPosition = target.transform.position;
         t0 = 0;
         t1 = 0;
@@ -605,11 +607,14 @@ public class CharacterScript : MonoBehaviour
         if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
         {
             transform.parent = hit.transform;
-            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY.y, transform.position.z);
+            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
         }
 
         CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         m_characterAnimation = null;
+
+        yield return new WaitForFixedUpdate();
+        TurnManager.instance.StartNewTurn();
     }
 
     public void StartMoveToPreviousScene()
@@ -625,7 +630,7 @@ public class CharacterScript : MonoBehaviour
 
     public void AttemptMoveTowardsLocation(Vector3 target)
     {
-        if(currentActionPoints < 1)
+        if(turnFinishedCheck())
             return;
 
         --currentActionPoints;
@@ -635,7 +640,10 @@ public class CharacterScript : MonoBehaviour
 
         Vector3 faceTowards = new Vector3(target.x, transform.position.y, target.z);
         transform.LookAt(faceTowards);
-        target = transform.position + transform.forward * 1.5f;
+        target = transform.position + transform.forward;
+        faceTowards = transform.position + transform.forward * 1.5f;
+
+        Debug.Log(target);
 
         transform.position = originalPos;
         transform.rotation = originalRot;
@@ -648,12 +656,24 @@ public class CharacterScript : MonoBehaviour
             MoveToLocation(hit.transform.position);
         }
         else
-        turnFinishedCheck();
+        {
+            myRay = new Ray(new Vector3(faceTowards.x, faceTowards.y + 1f, faceTowards.z), new Vector3(0,-1,0));
+            
+            if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
+            {
+                MoveToLocation(hit.transform.position);
+            }
+            else
+                turnFinishedCheck();
+        }
     }
 
     public void StartTurn()
     {
-        m_characterTurnCondition = new WaitUntil(() => turnFinished == true);
+        if(gameObject.tag == "PlayerCharacter")
+            m_characterTurnCondition = new WaitUntil(() => turnActive == false);
+        else if (gameObject.tag == "Enemy")
+            m_characterTurnCondition = new WaitUntil(() => !animationActive && !moving);
         m_characterTurn = StartCoroutine(TakeTurn());
     }
 
@@ -662,12 +682,12 @@ public class CharacterScript : MonoBehaviour
         if (gameObject.tag == "Enemy")
         {
             //AI behaviour goes here
-            if(!animationActive && !moving && !turnFinished)
+            if(!animationActive && !moving && turnActive)
                 AttemptMoveTowardsLocation(GameObject.FindGameObjectWithTag("PlayerCharacter").transform.position);
             
             yield return m_characterTurnCondition;
-            // if(!turnFinished)
-            //     m_characterTurn = StartCoroutine(TakeTurn());
+            if(turnActive)
+                 m_characterTurn = StartCoroutine(TakeTurn());
         }
         else
         {
@@ -680,7 +700,7 @@ public class CharacterScript : MonoBehaviour
     {
         if(currentActionPoints < 1)
         {
-            turnFinished = true;
+            turnActive = false;
             return true;
         }
         else

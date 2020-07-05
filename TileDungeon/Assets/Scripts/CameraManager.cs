@@ -53,16 +53,7 @@ public class CameraManager : MonoBehaviour
         CalculateStaticTransparencyBohundingBoxExtend(boundingBoxSideLength);
         CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(transform.position != target.position + offset[offsetIndex])
-        {
-            // CalculateDynamicTransparencyBoundingBox();
-            //CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
-        }
-    }
+    
     void LateUpdate()
     {
         //targetPos = target.position + offset[offsetIndex];

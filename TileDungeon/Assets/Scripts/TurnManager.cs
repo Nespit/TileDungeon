@@ -32,22 +32,20 @@ public class TurnManager : MonoBehaviour
     {
         if(turnOrderIndex > sortedTurnQueue.Count || sortedTurnQueue.Count < 1)
         {
-            PrepareNewTurn();
-            m_unitTurn = StartCoroutine(ExecuteCharacterTurns());
+            StartNewTurn();
         }
     }
 
-    void PrepareNewTurn()
+    public void StartNewTurn()
     {
-        rawTurnQueue = new List<CharacterScript>();
-        sortedTurnQueue = new List<CharacterScript>();
-        turnOrderIndex = 0;
+        WipeTurnQueue();
 
         if (TurnEvent == null)
             return;
         
         TurnEvent(null, null);
         SortTurnQueue();
+        m_unitTurn = StartCoroutine(ExecuteCharacterTurns());
     }
 
     void SortTurnQueue()
@@ -58,6 +56,16 @@ public class TurnManager : MonoBehaviour
         sortedTurnQueue = rawTurnQueue.OrderBy(o => o.turnOrderRating).ToList();
     }
 
+    public void WipeTurnQueue()
+    {
+        if(m_unitTurn != null)
+            StopCoroutine(m_unitTurn);
+
+        rawTurnQueue = new List<CharacterScript>();
+        sortedTurnQueue = new List<CharacterScript>();
+        turnOrderIndex = 0;
+    }
+
     IEnumerator ExecuteCharacterTurns()
     {
         if(sortedTurnQueue.Count < 1)
@@ -66,9 +74,12 @@ public class TurnManager : MonoBehaviour
 
         for (turnOrderIndex = 0; turnOrderIndex < sortedTurnQueue.Count; ++turnOrderIndex)
         {
-            m_unitTurnIsOver = new WaitUntil(() => sortedTurnQueue[turnOrderIndex].turnFinished == true);
+            if(sortedTurnQueue[turnOrderIndex] == null)
+                continue;
+
+            m_unitTurnIsOver = new WaitUntil(() => sortedTurnQueue[turnOrderIndex].turnActive == false);
             
-            sortedTurnQueue[turnOrderIndex].turnFinished = false;
+            sortedTurnQueue[turnOrderIndex].turnActive = true;
 
             sortedTurnQueue[turnOrderIndex].StartTurn();
 
