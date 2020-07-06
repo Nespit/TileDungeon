@@ -115,7 +115,7 @@ PrefabInstance:
     - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
       propertyPath: defenseStrength
-      value: 20
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}

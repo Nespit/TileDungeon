@@ -210,7 +210,7 @@ public class CharacterScript : MonoBehaviour
         {
             if(!hitLanded)
             {
-                int damage = attackStrength - target.defenseStrength;
+                int damage = Mathf.Clamp((attackStrength - target.defenseStrength), 0, 999);
                 target.currentHealth -= damage;
                 target.Attacked(damage);
                 hitLanded = true;
