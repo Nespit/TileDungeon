@@ -15,6 +15,7 @@ public class CharacterCanvasController : MonoBehaviour
     public Coroutine m_combatTextScroll;
     public WaitUntil sceneLoadFinished;
     public Image healthbar;
+    public GameObject statusPassive, statusProximity, statusAggressive;
 
     void Start()
     {

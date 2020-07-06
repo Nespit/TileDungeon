@@ -35,13 +35,15 @@ public class CharacterScript : MonoBehaviour
     public int currentHealth;
     public int attackStrength;
     public int defenseStrength;
-    public bool dontReload = false;
+    public bool placedManually = false;
     public CharacterCanvasController characterCanvas;
     public Animator characterAnimator;
     public int maxActionPoints = 1;
     public int currentActionPoints; 
     public int turnOrderRating = 1; 
     public bool turnActive = false;
+    public AudioSource audioSource;
+    public CharacterBehaviourType behaviour;
 
     void Awake()
     {
@@ -57,6 +59,7 @@ public class CharacterScript : MonoBehaviour
         m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
         currentActionPoints = maxActionPoints;
         TurnManager.instance.TurnEvent += TurnOrderAssignment;
+        SetBehaviourTo(behaviour);
 
         SetHealthbarFill();
         
@@ -66,7 +69,7 @@ public class CharacterScript : MonoBehaviour
 
             SavedListsPerScene localListOfSceneObjectsToLoad = GameManager.instance.GetListForScene(gameObject.scene.buildIndex);
         
-            if(localListOfSceneObjectsToLoad != null && dontReload)
+            if(localListOfSceneObjectsToLoad != null && placedManually)
                 Destroy(gameObject);
         }
 
@@ -93,7 +96,7 @@ public class CharacterScript : MonoBehaviour
         float tileID = transform.parent.GetComponent<TileScript>().tileID;
 
         SavedCharacter savedCharacter = new SavedCharacter(tileID, transform.position, transform.rotation, currentHealth, 
-                                                           maxHealth, attackStrength, defenseStrength, maxActionPoints, turnOrderRating);
+                                                           maxHealth, attackStrength, defenseStrength, maxActionPoints, turnOrderRating, behaviour);
 
         GameManager.instance.GetListForScene().SavedCharacters.Add(savedCharacter);
     }
@@ -138,7 +141,7 @@ public class CharacterScript : MonoBehaviour
        transform.rotation = Quaternion.Lerp(initialRotation, targetRotation, t0);
     }
 
-    public IEnumerator Movement()
+    public IEnumerator Movement(bool startedWalking = false)
     {
         yield return m_movementCondition;
         
@@ -151,6 +154,22 @@ public class CharacterScript : MonoBehaviour
         {
             turnFinishedCheck();
             moving = false;
+
+            if(gameObject.tag == "PlayerCharacter")
+            {
+                //Character proximity behaviour changes
+                for(int i = 0; i < TurnManager.instance.rawTurnQueue.Count; ++i)
+                {
+                    if(TurnManager.instance.rawTurnQueue[i].gameObject.tag == "Enemy")
+                    {
+                        if(Vector3.Distance(TurnManager.instance.rawTurnQueue[i].transform.position, transform.position) < 2f
+                           && TurnManager.instance.rawTurnQueue[i].behaviour == CharacterBehaviourType.proximity)
+                        {
+                            TurnManager.instance.rawTurnQueue[i].SetBehaviourTo(CharacterBehaviourType.aggressive);
+                        }
+                    }
+                }
+            }
             StopCoroutine(m_characterAnimation);
             m_characterAnimation = null;
             yield break;
@@ -158,11 +177,17 @@ public class CharacterScript : MonoBehaviour
         
         else
         {
+            if(startedWalking == false)
+            {
+                audioSource.clip = SoundLibrary.instance.doorOpen;
+                audioSource.Play();
+                startedWalking = true;
+            }
             MoveTowardsDestination(moveDestination);
         }
             
 
-        m_characterAnimation = StartCoroutine(Movement());
+        m_characterAnimation = StartCoroutine(Movement(startedWalking));
     }
 
     IEnumerator AttackAnimation(CharacterScript target, bool hitLanded = false)
@@ -189,6 +214,8 @@ public class CharacterScript : MonoBehaviour
                 target.currentHealth -= damage;
                 target.Attacked(damage);
                 hitLanded = true;
+                audioSource.clip = SoundLibrary.instance.attackHit;
+                audioSource.Play();
 
                 if(target.currentHealth <= 0)
                 {
@@ -216,7 +243,7 @@ public class CharacterScript : MonoBehaviour
         m_characterAnimation = StartCoroutine(AttackAnimation(target, hitLanded));
     }
 
-    IEnumerator AttemptToOpenLockedDoorWithoutKeyAnimation(Vector3 target)
+    IEnumerator AttemptToOpenLockedDoorWithoutKeyAnimation(Vector3 target, bool reachedDoor = false)
     {
         yield return null;
 
@@ -234,6 +261,13 @@ public class CharacterScript : MonoBehaviour
 
         else
         {
+            if(reachedDoor == false)
+            {
+                audioSource.clip = SoundLibrary.instance.doorLocked;
+                audioSource.Play();
+                reachedDoor = true;
+            }
+
             t2 = Mathf.Clamp01(t2 - Time.deltaTime * attackSpeed);
             transform.position = Vector3.Lerp(initialPos, moveDestination, t2);
             
@@ -249,7 +283,7 @@ public class CharacterScript : MonoBehaviour
             } 
         }
 
-        m_characterAnimation = StartCoroutine(AttemptToOpenLockedDoorWithoutKeyAnimation(target));
+        m_characterAnimation = StartCoroutine(AttemptToOpenLockedDoorWithoutKeyAnimation(target, reachedDoor));
     }
 
     bool AttemptMove(Vector3 target)
@@ -289,6 +323,8 @@ public class CharacterScript : MonoBehaviour
                 {
                     // t.SetParent(null);
                     // t.gameObject.SetActive(false);
+                    audioSource.clip = SoundLibrary.instance.doorOpen;
+                    audioSource.Play();
                     Destroy(t.gameObject);
                 }
                 else
@@ -334,6 +370,8 @@ public class CharacterScript : MonoBehaviour
             // collision.transform.SetParent(null);
             // collision.gameObject.SetActive(false);
             hasKey = true;
+            audioSource.clip = SoundLibrary.instance.keyPickUp;
+            audioSource.Play();
             Destroy(collision.gameObject);
         }
         else if(collision.gameObject.tag == "Coin")
@@ -342,6 +380,8 @@ public class CharacterScript : MonoBehaviour
             // collision.gameObject.SetActive(false);
             coinCount += 1;
             coinCounter.text = coinCount.ToString();
+            audioSource.clip = SoundLibrary.instance.coinPickUp;
+            audioSource.Play();
             Destroy(collision.gameObject);
 
             if (coinCount >= coinsTilWin)
@@ -513,6 +553,10 @@ public class CharacterScript : MonoBehaviour
         moveDestination = targetPosition;
         SetRotationTowardsTarget(targetPosition);
         animationActive = true;
+
+        if(target.behaviour == CharacterBehaviourType.passive)
+            target.SetBehaviourTo(CharacterBehaviourType.aggressive);
+
         m_characterAnimation = StartCoroutine(AttackAnimation(target));
     }
 
@@ -678,13 +722,30 @@ public class CharacterScript : MonoBehaviour
     {
         if (gameObject.tag == "Enemy")
         {
-            //AI behaviour goes here
-            if(!animationActive && !moving && turnActive)
-                AttemptMoveTowardsLocation(GameObject.FindGameObjectWithTag("PlayerCharacter").transform.position);
+            switch(behaviour)
+            {
+                case CharacterBehaviourType.aggressive:
+                {
+                    if(!animationActive && !moving && turnActive)
+                        AttemptMoveTowardsLocation(GameObject.FindGameObjectWithTag("PlayerCharacter").transform.position);
             
-            yield return m_characterTurnCondition;
-            if(turnActive)
-                 m_characterTurn = StartCoroutine(TakeTurn());
+                    yield return m_characterTurnCondition;
+                    if(turnActive)
+                        m_characterTurn = StartCoroutine(TakeTurn());
+                    yield break;
+                }
+                case CharacterBehaviourType.passive:
+                {
+                    turnActive = false;
+                    yield break;
+                }
+                case CharacterBehaviourType.proximity:
+                {
+                    turnActive = false;
+                    yield break;
+                }
+            }
+            
         }
         else
         {
@@ -704,5 +765,35 @@ public class CharacterScript : MonoBehaviour
         {
             return false;
         }
+    }
+
+    public void SetBehaviourTo(CharacterBehaviourType type)
+    {
+        switch(type)
+        {
+            case CharacterBehaviourType.aggressive:
+            {
+                characterCanvas.statusAggressive.gameObject.SetActive(true);
+                characterCanvas.statusPassive.gameObject.SetActive(false);
+                characterCanvas.statusProximity.gameObject.SetActive(false);
+                break;
+            }
+            case CharacterBehaviourType.passive:
+            {
+                characterCanvas.statusAggressive.gameObject.SetActive(false);
+                characterCanvas.statusPassive.gameObject.SetActive(true);
+                characterCanvas.statusProximity.gameObject.SetActive(false);
+                break;
+            }
+            case CharacterBehaviourType.proximity:
+            {
+                characterCanvas.statusAggressive.gameObject.SetActive(false);
+                characterCanvas.statusPassive.gameObject.SetActive(false);
+                characterCanvas.statusProximity.gameObject.SetActive(true);
+                break;
+            }
+        }
+        
+        behaviour = type;
     }
 }

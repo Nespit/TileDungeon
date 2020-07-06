@@ -33,9 +33,10 @@ public class SavedCharacter
     public int defenseStrength;
     public int maxActionPoints; 
     public int turnOrderRating; 
+    public CharacterBehaviourType behaviour;
 
     public SavedCharacter(float tileID, Vector3 position, Quaternion rotation, int currentHealth, 
-                          int maxHealth, int attackStrength, int defenseStrength, int maxActionPoints, int turnOrderRating)
+                          int maxHealth, int attackStrength, int defenseStrength, int maxActionPoints, int turnOrderRating, CharacterBehaviourType behaviour)
     {
         this.tileID = tileID;
         this.position = position;
@@ -46,6 +47,7 @@ public class SavedCharacter
         this.defenseStrength = defenseStrength;
         this.maxActionPoints = maxActionPoints;
         this.turnOrderRating = turnOrderRating;
+        this.behaviour = behaviour;
     }
 }
 
@@ -154,4 +156,12 @@ public enum InteractableObjectType
     key,
     coin,
     door 
+}
+
+public enum CharacterBehaviourType
+{
+    passive,
+    proximity,
+    aggressive,
+    player 
 }

@@ -95,7 +95,7 @@ PrefabInstance:
     - target: {fileID: 1690609711648447675, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
       propertyPath: m_Name
-      value: Player Character
+      value: Player Character 1
       objectReference: {fileID: 0}
     - target: {fileID: 1690609711648447675, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
@@ -125,6 +125,11 @@ PrefabInstance:
     - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
       propertyPath: maxActionPoints
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
+        type: 3}
+      propertyPath: behaviour
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1951281519783769207, guid: b3356ad84e20946dcabee54dfd7bec39,

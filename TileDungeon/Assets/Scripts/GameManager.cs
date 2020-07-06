@@ -220,6 +220,7 @@ public class GameManager : MonoBehaviour
                 script.turnOrderRating = localListOfSceneObjectsToLoad.SavedCharacters[i].turnOrderRating;
                 script.attackStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].attackStrength;
                 script.defenseStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].defenseStrength;
+                script.behaviour = localListOfSceneObjectsToLoad.SavedCharacters[i].behaviour;
                 spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
             }
         }

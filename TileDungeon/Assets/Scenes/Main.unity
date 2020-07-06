@@ -1779,6 +1779,55 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1380721963}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1469896525
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1469896527}
+  - component: {fileID: 1469896526}
+  m_Layer: 0
+  m_Name: SoundLibrary
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1469896526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469896525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3473ed59a3eb4daf948ad91a552468f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coinPickUp: {fileID: 8300000, guid: ba08975d6351142f798062e91df27a2a, type: 3}
+  keyPickUp: {fileID: 8300000, guid: 856471a118e70485cbaa65b66ad66d1d, type: 3}
+  attackHit: {fileID: 8300000, guid: dced88a891e204286aab0cef82d20f23, type: 3}
+  walk: {fileID: 8300000, guid: d51c06e60c03846ea8275a67a6b30ad0, type: 3}
+  doorLocked: {fileID: 8300000, guid: 334e7ba5647fa4e91a426bf29e86082b, type: 3}
+  doorOpen: {fileID: 8300000, guid: 9b06b480168334b5185da75ee005a22e, type: 3}
+--- !u!4 &1469896527
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469896525}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.5270543, y: 0.29458952, z: 0.87553}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1706494368 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4349257664536947287, guid: da90bb993b5c3459c99f468d76488121,
@@ -2261,7 +2310,7 @@ RectTransform:
   - {fileID: 57282551}
   - {fileID: 385207815}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2325,7 +2374,7 @@ PrefabInstance:
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
