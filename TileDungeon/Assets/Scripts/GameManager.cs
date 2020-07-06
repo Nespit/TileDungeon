@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(gameState == GameState.Game)
+        if(gameState == GameState.Game && !IsSceneBeingLoaded)
         {
             TurnManager.instance.Turn();
             inputManager.ProcessInput();
@@ -227,13 +227,10 @@ public class GameManager : MonoBehaviour
             InitializeSceneList();
 
         CameraManager.instance.UpdateStaticTransparencyBoundingBox();
-        IsSceneBeingLoaded = false;
         
-        // foreach(GameObject g in scene.GetRootGameObjects())
-        // {
-        //     g.SetActive (true);
-        // }
-
+        yield return new WaitForFixedUpdate();
+        TurnManager.instance.StartNewTurn();
+        IsSceneBeingLoaded = false;
         m_setSceneActive = null;
     }
 

@@ -322,6 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combatText: {fileID: 7954552206713053495}
   healthText: {fileID: 715062223736394038}
+  turnOrderIndicator: {fileID: 9119317501283194139}
   combatTextTarget: {fileID: 8251831566648058183}
   textScrollDistancePerSec: 1
   healthbar: {fileID: 597093259457318782}
@@ -599,6 +600,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 7188825438784447460}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &9119317501283194139 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2111489303177934591, guid: e1c66ab92fc1443b99b12b5c405ac976,
+    type: 3}
+  m_PrefabInstance: {fileID: 7188825438784447460}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &9080306468557314009
 PrefabInstance:
   m_ObjectHideFlags: 0

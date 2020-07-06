@@ -36,7 +36,7 @@ public class CharacterScript : MonoBehaviour
     public int attackStrength;
     public int defenseStrength;
     public bool dontReload = false;
-    CharacterCanvasController characterCanvas;
+    public CharacterCanvasController characterCanvas;
     public Animator characterAnimator;
     public int maxActionPoints = 1;
     public int currentActionPoints; 
@@ -612,9 +612,6 @@ public class CharacterScript : MonoBehaviour
 
         CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         m_characterAnimation = null;
-
-        yield return new WaitForFixedUpdate();
-        TurnManager.instance.StartNewTurn();
     }
 
     public void StartMoveToPreviousScene()

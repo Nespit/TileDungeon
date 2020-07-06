@@ -54,6 +54,11 @@ public class TurnManager : MonoBehaviour
             return;
         
         sortedTurnQueue = rawTurnQueue.OrderBy(o => o.turnOrderRating).ToList();
+
+        for (int i = 0; i < sortedTurnQueue.Count; ++i)
+        {
+            sortedTurnQueue[i].characterCanvas.turnOrderIndicator.text = (i+1).ToString();
+        }
     }
 
     public void WipeTurnQueue()
@@ -84,6 +89,12 @@ public class TurnManager : MonoBehaviour
             sortedTurnQueue[turnOrderIndex].StartTurn();
 
             yield return m_unitTurnIsOver;
+
+            sortedTurnQueue[turnOrderIndex].characterCanvas.turnOrderIndicator.text =  "-";
+
+            sortedTurnQueue.Remove(sortedTurnQueue[turnOrderIndex]);
+
+            --turnOrderIndex;
         }
 
         ++turnOrderIndex;

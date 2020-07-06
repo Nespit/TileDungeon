@@ -7,6 +7,7 @@ public class CharacterCanvasController : MonoBehaviour
 {
     public Text combatText;
     public Text healthText;
+    public Text turnOrderIndicator;
     public Transform combatTextTarget;
     Vector3 combatTextInitialPos, combatTextTargetPos;
     public float textScrollDistancePerSec;
