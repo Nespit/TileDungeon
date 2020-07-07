@@ -89,6 +89,8 @@ public class CharacterScript : MonoBehaviour
 
         if (gameObject.tag == "Enemy")
             GameManager.instance.SaveEvent -= SaveFunction;
+        else
+            Debug.Log("Character was destroyed. This should not happen");
     }
 
     public void SaveFunction(object sender, EventArgs args)
@@ -352,7 +354,6 @@ public class CharacterScript : MonoBehaviour
             }
             if(t.tag == "StairDown" && gameObject.tag == "PlayerCharacter")
             {
-                //Debug.Log("Down");
                 moving = true;
                 StartMoveToNextScene();
             }
@@ -605,6 +606,8 @@ public class CharacterScript : MonoBehaviour
 
         yield return moveUp;
         
+        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
+
         GameManager.instance.MoveToPreviousScene();
 
         m_characterAnimation = StartCoroutine(EnterScene(false));
@@ -615,6 +618,8 @@ public class CharacterScript : MonoBehaviour
         
         yield return moveDown;               
         
+        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
+
         GameManager.instance.MoveToNextScene();  
 
         m_characterAnimation = StartCoroutine(EnterScene(true));
@@ -623,7 +628,6 @@ public class CharacterScript : MonoBehaviour
     IEnumerator EnterScene(bool next)
     {
         yield return GameManager.instance.m_setSceneActiveCondition;
-
         Transform target;
 
         if(next)
@@ -660,12 +664,10 @@ public class CharacterScript : MonoBehaviour
 
     public void StartMoveToPreviousScene()
     {
-        transform.parent = transform;
         m_characterAnimation = StartCoroutine(MoveToPreviousScene());
     }
     public void StartMoveToNextScene()
     {
-        transform.parent = transform;
         m_characterAnimation = StartCoroutine(MoveToNextScene());
     }
 
@@ -683,8 +685,6 @@ public class CharacterScript : MonoBehaviour
         transform.LookAt(faceTowards);
         target = transform.position + transform.forward;
         faceTowards = transform.position + transform.forward * 1.5f;
-
-        Debug.Log(target);
 
         transform.position = originalPos;
         transform.rotation = originalRot;
@@ -727,7 +727,17 @@ public class CharacterScript : MonoBehaviour
                 case CharacterBehaviourType.aggressive:
                 {
                     if(!animationActive && !moving && turnActive)
-                        AttemptMoveTowardsLocation(GameObject.FindGameObjectWithTag("PlayerCharacter").transform.position);
+                    {
+                        var player = GameObject.FindGameObjectWithTag("PlayerCharacter");
+
+                        if(player != null)
+                            AttemptMoveTowardsLocation(player.transform.position);
+                        else
+                        {
+                            Debug.Log("Player can not be found. This should not happen");
+                            turnActive = false;
+                        }
+                    }
             
                     yield return m_characterTurnCondition;
                     if(turnActive)

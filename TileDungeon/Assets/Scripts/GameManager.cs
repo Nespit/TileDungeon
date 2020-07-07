@@ -96,6 +96,7 @@ public class GameManager : MonoBehaviour
 
         yield return m_setSceneActiveCondition;
 
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(1).isLoaded);
         SceneManager.LoadScene(1, LoadSceneMode.Additive);
 
         playerCharacter.transform.position = new Vector3(0f, 0.26f, 0f);
@@ -113,7 +114,6 @@ public class GameManager : MonoBehaviour
             Menu();
         }
 
-        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(1).isLoaded);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(1)));
     }
 
@@ -138,6 +138,7 @@ public class GameManager : MonoBehaviour
        
         LoadData();
 
+        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(savedGameData.SceneID).isLoaded);
         SceneManager.LoadScene(savedGameData.SceneID, LoadSceneMode.Additive);
 
         playerCharacter.transform.position = savedGameData.position;
@@ -155,7 +156,6 @@ public class GameManager : MonoBehaviour
             Menu();
         }
 
-        m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(savedGameData.SceneID).isLoaded);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(savedGameData.SceneID)));
     }
 
@@ -171,7 +171,7 @@ public class GameManager : MonoBehaviour
     IEnumerator SetSceneActive(Scene scene)
     {
         yield return m_setSceneActiveCondition;
-        
+        //Debug.Log("Scene loading finished, begin setting the scene active.");
         SceneManager.SetActiveScene(scene);
 
         SavedListsPerScene localListOfSceneObjectsToLoad = GetListForScene();
@@ -185,21 +185,18 @@ public class GameManager : MonoBehaviour
                 switch(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].objectType)
                 {
                     case InteractableObjectType.door:
-                        //Debug.Log("Spawn door");
                         spawnedObject = Instantiate(doorPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
                         break;
                     case InteractableObjectType.coin:
-                        //Debug.Log("Spawn coin");
                         spawnedObject = Instantiate(coinPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
                         break;
                     case InteractableObjectType.key:
-                        //Debug.Log("Spawn key");
                         spawnedObject = Instantiate(keyPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
@@ -238,10 +235,13 @@ public class GameManager : MonoBehaviour
     public void MoveToNextScene()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        //Debug.Log("Current Scene Index = " + currentSceneIndex);
         int sceneCount = SceneManager.sceneCountInBuildSettings;
+        TurnManager.instance.WipeTurnQueue();
 
         if(currentSceneIndex + 1 >= sceneCount)
         {
+            //Debug.Log("Tried loading an invalid scene. Number of scenes in the build settings = " + sceneCount + ". Index of scene that was attempted to be loaded = " + (currentSceneIndex + 1));
             return;
         }
         
@@ -250,8 +250,9 @@ public class GameManager : MonoBehaviour
         PrepareTileDictionary();
 
         IsSceneBeingLoaded = true;
+
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex+1).isLoaded);
-        SceneManager.LoadSceneAsync(currentSceneIndex+1, LoadSceneMode.Additive);
+        SceneManager.LoadSceneAsync((currentSceneIndex+1), LoadSceneMode.Additive);
         SceneManager.UnloadSceneAsync(currentSceneIndex);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex+1)));
     }
@@ -259,6 +260,8 @@ public class GameManager : MonoBehaviour
     public void MoveToPreviousScene()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        //Debug.Log("Current Scene Index = " + currentSceneIndex);
+        TurnManager.instance.WipeTurnQueue();
 
         if(currentSceneIndex - 1 < 1)
         {

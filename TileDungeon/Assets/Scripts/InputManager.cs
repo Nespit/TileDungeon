@@ -51,7 +51,6 @@ public class InputManager : MonoBehaviour
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
-                //Debug.Log("Hit");
                 character.MoveToLocation(hit.transform.position);
             }
         }
@@ -133,8 +132,8 @@ public class InputManager : MonoBehaviour
                     float swipeDuration = Time.time - startTime;
                     float swipeDist = Vector2.Distance(touch[0].position, startPos);
 
-                    Debug.Log("swipe duration == " + swipeDuration);
-                    Debug.Log("swipe distance == " + swipeDist);
+                    //Debug.Log("swipe duration == " + swipeDuration);
+                    //Debug.Log("swipe distance == " + swipeDist);
 
                     if (swipeDist > maxSwipeDist || swipeDist < minSwipeDist || swipeDuration > maxSwipeDuration)
                     {
@@ -158,7 +157,6 @@ public class InputManager : MonoBehaviour
                         if(!character.turnActive)
                             return;
 
-                        Debug.Log("Press executed");
                         RaycastHit hit;
                         myRay = cameraManager.mainCamera.ScreenPointToRay(touch[0].position);
 

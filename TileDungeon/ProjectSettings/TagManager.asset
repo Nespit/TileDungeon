@@ -13,6 +13,7 @@ TagManager:
   - PlayerCharacter
   - StairUp
   - StairDown
+  - MainSceneAnchor
   layers:
   - Default
   - TransparentFX
