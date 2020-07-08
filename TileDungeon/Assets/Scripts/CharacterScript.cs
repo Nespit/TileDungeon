@@ -80,6 +80,13 @@ public class CharacterScript : MonoBehaviour
         {
             transform.parent = hit.transform;
             transform.position = new Vector3(hit.transform.position.x, hit.transform.position.y + offsetY, hit.transform.position.z);
+
+            if(gameObject.tag == "PlayerCharacter")
+            {
+                CameraManager.instance.targetTargetPos = transform.position;
+                CameraManager.instance.EnterSceneCameraUpdate();
+                CameraManager.instance.UpdateStaticTransparencyBoundingBox();
+            }
         }
     }
 
@@ -162,7 +169,7 @@ public class CharacterScript : MonoBehaviour
                 //Character proximity behaviour changes
                 for(int i = 0; i < TurnManager.instance.rawTurnQueue.Count; ++i)
                 {
-                    if(TurnManager.instance.rawTurnQueue[i].gameObject.tag == "Enemy")
+                    if(TurnManager.instance.rawTurnQueue[i] != null && TurnManager.instance.rawTurnQueue[i].gameObject.tag == "Enemy")
                     {
                         if(Vector3.Distance(TurnManager.instance.rawTurnQueue[i].transform.position, transform.position) < 2f
                            && TurnManager.instance.rawTurnQueue[i].behaviour == CharacterBehaviourType.proximity)
@@ -563,6 +570,11 @@ public class CharacterScript : MonoBehaviour
 
     public void AttemptToOpenLockedDoorWithoutKey(Transform target)
     {
+        if(gameObject.tag == "Enemy")
+        {
+            --currentActionPoints;
+        }
+        
         Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
         t0 = 0;
         t1 = 0;
@@ -642,8 +654,9 @@ public class CharacterScript : MonoBehaviour
         }
 
         transform.position = target.position;
-        CameraManager.instance.targetTargetPos = transform.position;
-        CameraManager.instance.tUpdatePos = 1;
+        transform.position = transform.position + transform.forward;
+        // CameraManager.instance.targetTargetPos = transform.position;
+        // CameraManager.instance.tUpdatePos = 1;
 
         Vector3 rayOrigin = new Vector3(transform.position.x, transform.position.y+1, transform.position.z);
         Vector3 rayDirection = new Vector3(0,-1,0);
@@ -658,6 +671,8 @@ public class CharacterScript : MonoBehaviour
             transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
         }
 
+        CameraManager.instance.targetTargetPos = transform.position;
+        CameraManager.instance.EnterSceneCameraUpdate();
         CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         m_characterAnimation = null;
     }
@@ -783,6 +798,9 @@ public class CharacterScript : MonoBehaviour
         {
             case CharacterBehaviourType.aggressive:
             {
+                if(behaviour == CharacterBehaviourType.passive)
+                    turnOrderRating = -1;
+
                 characterCanvas.statusAggressive.gameObject.SetActive(true);
                 characterCanvas.statusPassive.gameObject.SetActive(false);
                 characterCanvas.statusProximity.gameObject.SetActive(false);

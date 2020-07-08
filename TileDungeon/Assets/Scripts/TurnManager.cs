@@ -57,7 +57,15 @@ public class TurnManager : MonoBehaviour
 
         for (int i = 0; i < sortedTurnQueue.Count; ++i)
         {
-            sortedTurnQueue[i].characterCanvas.turnOrderIndicator.text = (i+1).ToString();
+            if(sortedTurnQueue[i].behaviour == CharacterBehaviourType.passive)
+            {
+                sortedTurnQueue[i].characterCanvas.turnOrderIndicator.text =  "-";
+                sortedTurnQueue.Remove(sortedTurnQueue[i]);
+                --i;
+                continue;
+            }
+            else
+                sortedTurnQueue[i].characterCanvas.turnOrderIndicator.text = (i+1).ToString();
         }
     }
 
@@ -76,27 +84,25 @@ public class TurnManager : MonoBehaviour
         if(sortedTurnQueue.Count < 1)
             yield break;
 
-
         for (turnOrderIndex = 0; turnOrderIndex < sortedTurnQueue.Count; ++turnOrderIndex)
         {
             if(sortedTurnQueue[turnOrderIndex] == null)
+            {
+                sortedTurnQueue.Remove(sortedTurnQueue[turnOrderIndex]);
+                --turnOrderIndex;
                 continue;
-
-            m_unitTurnIsOver = new WaitUntil(() => sortedTurnQueue[turnOrderIndex].turnActive == false);
-            
-            sortedTurnQueue[turnOrderIndex].turnActive = true;
-
-            sortedTurnQueue[turnOrderIndex].StartTurn();
-
-            yield return m_unitTurnIsOver;
-
-            sortedTurnQueue[turnOrderIndex].characterCanvas.turnOrderIndicator.text =  "-";
-
-            sortedTurnQueue.Remove(sortedTurnQueue[turnOrderIndex]);
-
-            --turnOrderIndex;
+            }
+            else
+            {
+                m_unitTurnIsOver = new WaitUntil(() => sortedTurnQueue[turnOrderIndex].turnActive == false);
+                sortedTurnQueue[turnOrderIndex].turnActive = true;
+                sortedTurnQueue[turnOrderIndex].StartTurn();
+                yield return m_unitTurnIsOver;
+                sortedTurnQueue[turnOrderIndex].characterCanvas.turnOrderIndicator.text =  "-";
+                sortedTurnQueue.Remove(sortedTurnQueue[turnOrderIndex]);
+                --turnOrderIndex;
+            }
         }
-
         ++turnOrderIndex;
     }
 }

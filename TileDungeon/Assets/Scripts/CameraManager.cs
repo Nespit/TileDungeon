@@ -90,6 +90,15 @@ public class CameraManager : MonoBehaviour
         //transform.position = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.3f);
     }
 
+    public void EnterSceneCameraUpdate()
+    {
+        targetPos = targetTargetPos + offset[offsetIndex];
+        transform.position = targetPos;
+        initialPos = transform.position;
+        transform.LookAt(target);
+        CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
+    }
+
     public void RotateClockwise()
     {
         tUpdatePos = 0;
