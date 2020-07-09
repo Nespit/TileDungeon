@@ -20,9 +20,9 @@ public class GameManager : MonoBehaviour
     public delegate void SaveDelegate(object sender, EventArgs args);
     public event SaveDelegate SaveEvent;
     public bool IsSceneBeingLoaded = false;
-    public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab;
+    public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab, playerCharacterPrefab;
     public Dictionary<float, Transform> currentSceneTiles;
-    GameState gameState;
+    public GameState gameState;
     public MainMenu mainMenu;
 
 
@@ -84,6 +84,11 @@ public class GameManager : MonoBehaviour
     {
         DiscardData();
 
+        // var player = Instantiate(playerCharacterPrefab);
+        // playerCharacter = player.GetComponent<CharacterScript>();
+        // playerCharacter.winAnnouncement = UIManager.instance.announcement;
+        // playerCharacter.winAnnouncement.gameObject.SetActive(false);
+
         if(SceneManager.sceneCount > 1)
         {
             playerCharacter.transform.parent = transform;
@@ -123,6 +128,11 @@ public class GameManager : MonoBehaviour
             yield break;
 
         DiscardData();
+
+        // var player = Instantiate(playerCharacterPrefab);
+        // playerCharacter = player.GetComponent<CharacterScript>();
+        // playerCharacter.winAnnouncement = UIManager.instance.announcement;
+        // playerCharacter.winAnnouncement.gameObject.SetActive(false);
 
         if(SceneManager.sceneCount > 1)
         {
@@ -402,12 +412,12 @@ public class GameManager : MonoBehaviour
 
         if(mainMenu.gameObject.activeInHierarchy)
             gameState = GameState.MainMenu;
-        else    
+        else if(playerCharacter != null)   
             gameState = GameState.Game;
     }
 }
 
-enum GameState
+public enum GameState
 {
     MainMenu,
     Game

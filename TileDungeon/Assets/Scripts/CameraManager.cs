@@ -34,12 +34,7 @@ public class CameraManager : MonoBehaviour
 			Destroy(gameObject);    
 		}
 		DontDestroyOnLoad(gameObject);
-	}
 
-    void Start()
-    {
-        mainCamera = GetComponent<Camera>();
-        initialPos = transform.position;
         offset[0] = transform.position - target.position;
         offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
         offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
@@ -47,11 +42,13 @@ public class CameraManager : MonoBehaviour
         targetPos = targetTargetPos + offset[offsetIndex];
         transform.LookAt(target);
         velocity = Vector3.zero;
-
-        // CalculateDynamicTransparencyBoundingBoxExtend();
-        // CalculateDynamicTransparencyBoundingBox();
         CalculateStaticTransparencyBohundingBoxExtend(boundingBoxSideLength);
         CalculateStaticTransparencyBoundingBox(boundingBoxSideLength);
+	}
+
+    void Start()
+    {
+        
     }
     
     void LateUpdate()

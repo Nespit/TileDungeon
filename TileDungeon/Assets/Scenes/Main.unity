@@ -52,7 +52,7 @@ LightmapSettings:
     m_AlbedoBoost: 1
     m_EnvironmentLightingMode: 1
     m_EnableBakedLightmaps: 1
-    m_EnableRealtimeLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
     serializedVersion: 10
     m_Resolution: 4
@@ -88,7 +88,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ShowResolutionOverlay: 1
-  m_LightingDataAsset: {fileID: 112000000, guid: a5768dbeb71e941ad95548ef98bb26eb,
+  m_LightingDataAsset: {fileID: 112000002, guid: a5768dbeb71e941ad95548ef98bb26eb,
     type: 2}
   m_UseShadowmask: 0
 --- !u!196 &4
@@ -937,6 +937,7 @@ GameObject:
   - component: {fileID: 591717935}
   - component: {fileID: 591717934}
   - component: {fileID: 591717933}
+  - component: {fileID: 591717937}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1027,6 +1028,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &591717937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591717932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84354c1e0239649ae8c6e5a4d4125649, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  announcement: {fileID: 1827488530}
 --- !u!1 &593247213
 GameObject:
   m_ObjectHideFlags: 0
@@ -1461,14 +1475,17 @@ MonoBehaviour:
     currentHealth: 0
     hasKey: 0
   IsSceneBeingLoaded: 0
-  keyPrefab: {fileID: 4301790635709430899, guid: 9a50520894fe74e719a6c33aa529a9a3,
+  keyPrefab: {fileID: 8042167021449245365, guid: 1569b57caf8e54f0db4118fb3f4dd025,
     type: 3}
-  coinPrefab: {fileID: 3749554576871498332, guid: c993220f296da48b8b9c12fe70fcf8b2,
+  coinPrefab: {fileID: 7834006525282662792, guid: ccbad622765b541a3a0df25364ce2599,
     type: 3}
   doorPrefab: {fileID: 7968900514670330098, guid: a1f7effb9a7a248f9a74646709ddafea,
     type: 3}
   enemyPrefab: {fileID: 2324104748325146374, guid: 2d2b37869f349429c86155ebcb4101ed,
     type: 3}
+  playerCharacterPrefab: {fileID: 5757752357810159168, guid: 89c83a007d68344dea0e003d4a998355,
+    type: 3}
+  gameState: 0
   mainMenu: {fileID: 1880581442}
 --- !u!4 &1212906904
 Transform:
@@ -1856,7 +1873,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1706494368 stripped
 MonoBehaviour:
@@ -2340,7 +2357,7 @@ RectTransform:
   - {fileID: 57282551}
   - {fileID: 385207815}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2404,7 +2421,7 @@ PrefabInstance:
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
       propertyPath: m_RootOrder
-      value: 10
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}

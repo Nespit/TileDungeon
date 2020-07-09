@@ -57,7 +57,8 @@ public class CharacterScript : MonoBehaviour
         layerMaskTile = LayerMask.GetMask("Tiles");
         layerMaskObject = LayerMask.GetMask("Objects");
         m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
-        currentActionPoints = maxActionPoints;
+        // currentActionPoints = maxActionPoints;
+        // characterCanvas.SetActionPointsToMax(this);
         TurnManager.instance.TurnEvent += TurnOrderAssignment;
         SetBehaviourTo(behaviour);
 
@@ -73,6 +74,11 @@ public class CharacterScript : MonoBehaviour
                 Destroy(gameObject);
         }
 
+        AdjustCharacterPositionToTile();
+    }
+
+    void AdjustCharacterPositionToTile()
+    {
         myRay = new Ray(new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z), new Vector3(0,-1,0));
         RaycastHit hit;
 
@@ -96,8 +102,12 @@ public class CharacterScript : MonoBehaviour
 
         if (gameObject.tag == "Enemy")
             GameManager.instance.SaveEvent -= SaveFunction;
-        else
-            Debug.Log("Character was destroyed. This should not happen");
+        else if(gameObject.tag == "PlayerCharacter")
+        {
+            winAnnouncement.transform.gameObject.SetActive(true);
+            winAnnouncement.text = "You died, that's it.";
+            GameManager.instance.gameState = GameState.MainMenu;
+        }
     }
 
     public void SaveFunction(object sender, EventArgs args)
@@ -115,6 +125,7 @@ public class CharacterScript : MonoBehaviour
         if(gameObject.activeSelf)
         {
             currentActionPoints = maxActionPoints;
+            characterCanvas.SetActionPointsToMax(this);
             TurnManager.instance.rawTurnQueue.Add(this);
         }
     }
@@ -342,11 +353,19 @@ public class CharacterScript : MonoBehaviour
                     return false;
                 }  
             }
-            if (t.tag == "Enemy" && gameObject.tag == "PlayerCharacter")
+            if (t.tag == "Enemy")
             {
-                CharacterScript enemy = t.GetComponent<CharacterScript>();
-                Attack(enemy);
-                return false;
+                if(gameObject.tag == "PlayerCharacter")
+                {
+                    CharacterScript enemy = t.GetComponent<CharacterScript>();
+                    Attack(enemy);
+                    return false;
+                }
+                else if(t.tag == "Enemy")
+                {
+                    AttemptToOpenLockedDoorWithoutKey(t);
+                    return false;
+                }
             }
             if (t.tag == "PlayerCharacter" && gameObject.tag == "Enemy")
             {
@@ -395,6 +414,7 @@ public class CharacterScript : MonoBehaviour
             if (coinCount >= coinsTilWin)
             {
                 winAnnouncement.transform.gameObject.SetActive(true);
+                winAnnouncement.text = "You won, I guess.";
             }
         }
     }
@@ -492,6 +512,7 @@ public class CharacterScript : MonoBehaviour
         if (gameObject.tag == "Enemy")
         {
             ++currentActionPoints;
+            characterCanvas.AddActionPoints(1);
         }
 
         if(turnFinishedCheck())
@@ -511,6 +532,7 @@ public class CharacterScript : MonoBehaviour
             if (gameObject.tag == "Enemy")
             {
                 --currentActionPoints;
+                characterCanvas.RemoveActionPoints(1);
             }
 
             myRay = new Ray(new Vector3(target.x, target.y + 1f, target.z), new Vector3(0,-1,0));
@@ -532,6 +554,7 @@ public class CharacterScript : MonoBehaviour
             if (gameObject.tag == "PlayerCharacter")
             {
                 --currentActionPoints;
+                characterCanvas.RemoveActionPoints(1);
                 CameraManager.instance.targetTargetPos = target;
                 CameraManager.instance.FollowTarget();
             }
@@ -551,6 +574,7 @@ public class CharacterScript : MonoBehaviour
         }
         
         --currentActionPoints;
+        characterCanvas.RemoveActionPoints(1);
         Vector3 targetPosition = target.transform.position;
         t0 = 0;
         t1 = 0;
@@ -573,6 +597,7 @@ public class CharacterScript : MonoBehaviour
         if(gameObject.tag == "Enemy")
         {
             --currentActionPoints;
+            characterCanvas.RemoveActionPoints(1);
         }
         
         Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
@@ -692,6 +717,7 @@ public class CharacterScript : MonoBehaviour
             return;
 
         --currentActionPoints;
+        characterCanvas.RemoveActionPoints(1);
 
         Quaternion originalRot = transform.rotation;
         Vector3 originalPos = transform.position;

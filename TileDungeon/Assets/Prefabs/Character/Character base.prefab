@@ -405,6 +405,17 @@ PrefabInstance:
       propertyPath: statusProximity
       value: 
       objectReference: {fileID: 6435236215580765964}
+    - target: {fileID: 5393210325076736312, guid: 8dd19e872ee0449f79893fa0c31b6c9f,
+        type: 3}
+      propertyPath: actionPointBar
+      value: 
+      objectReference: {fileID: 1289380093752807487}
+    - target: {fileID: 5393210325076736312, guid: 8dd19e872ee0449f79893fa0c31b6c9f,
+        type: 3}
+      propertyPath: actionPoint
+      value: 
+      objectReference: {fileID: 2732041635064273196, guid: 1d9be19d280ee404798119fa19f21e30,
+        type: 3}
     - target: {fileID: 6294888757191787838, guid: 8dd19e872ee0449f79893fa0c31b6c9f,
         type: 3}
       propertyPath: m_RootOrder
@@ -463,6 +474,12 @@ GameObject:
 --- !u!1 &6435236215580765964 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1611355282855828329, guid: 8dd19e872ee0449f79893fa0c31b6c9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 5697654040397722725}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1289380093752807487 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6842918868745266266, guid: 8dd19e872ee0449f79893fa0c31b6c9f,
     type: 3}
   m_PrefabInstance: {fileID: 5697654040397722725}
   m_PrefabAsset: {fileID: 0}
