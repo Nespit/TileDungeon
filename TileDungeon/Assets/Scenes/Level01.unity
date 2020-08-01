@@ -950,6 +950,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy 1 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2324104748325146374, guid: 2d2b37869f349429c86155ebcb4101ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
       propertyPath: dontReload
@@ -964,6 +969,11 @@ PrefabInstance:
         type: 3}
       propertyPath: behaviour
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
+        type: 3}
+      propertyPath: attackStrength
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5223237856406621375, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
@@ -1114,6 +1124,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy 1 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 2324104748325146374, guid: 2d2b37869f349429c86155ebcb4101ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
       propertyPath: dontReload
@@ -1132,7 +1147,7 @@ PrefabInstance:
     - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
       propertyPath: attackStrength
-      value: 50
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5223237856406621375, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
@@ -1642,6 +1657,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7588022333983901858, guid: 1569b57caf8e54f0db4118fb3f4dd025,
+        type: 3}
+      propertyPath: dontReload
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8042167021449245365, guid: 1569b57caf8e54f0db4118fb3f4dd025,
         type: 3}
@@ -2519,10 +2539,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2324104748325146374, guid: 2d2b37869f349429c86155ebcb4101ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
       propertyPath: placedManually
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3352317094861927089, guid: 2d2b37869f349429c86155ebcb4101ed,
+        type: 3}
+      propertyPath: attackStrength
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5223237856406621375, guid: 2d2b37869f349429c86155ebcb4101ed,
         type: 3}
@@ -2860,6 +2890,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7665809612797379487, guid: ccbad622765b541a3a0df25364ce2599,
+        type: 3}
+      propertyPath: dontReload
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7834006525282662792, guid: ccbad622765b541a3a0df25364ce2599,
         type: 3}
@@ -3697,6 +3732,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7665809612797379487, guid: ccbad622765b541a3a0df25364ce2599,
+        type: 3}
+      propertyPath: dontReload
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7834006525282662792, guid: ccbad622765b541a3a0df25364ce2599,
         type: 3}
       propertyPath: m_Name
@@ -4265,6 +4305,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7665809612797379487, guid: ccbad622765b541a3a0df25364ce2599,
+        type: 3}
+      propertyPath: dontReload
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7834006525282662792, guid: ccbad622765b541a3a0df25364ce2599,
         type: 3}

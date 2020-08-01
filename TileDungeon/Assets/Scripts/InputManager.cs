@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class InputManager : MonoBehaviour
 {
-    CharacterScript character;
+    public static InputManager instance;
+    public CharacterScript character;
     CameraManager cameraManager;
     Ray myRay;
     LayerMask layerMaskTile, layerMaskObject;
@@ -14,7 +15,16 @@ public class InputManager : MonoBehaviour
     public float minSwipeDist, maxSwipeDist, maxSwipeDuration, minPinchDist, pressMaxDistance;
     int phaseBeginCount, phaseEndedCount = 0;
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        if (instance == null) {
+			instance = this;
+		} else if (instance != this) {
+			Destroy(gameObject);    
+		}
+		DontDestroyOnLoad(gameObject);
+    }
+
     void Start()
     {
         character = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();

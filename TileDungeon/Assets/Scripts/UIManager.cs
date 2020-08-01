@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
     public Text announcement;
+    public Text coinCounter;
 
     // Start is called before the first frame update
     void Awake()
@@ -20,11 +21,5 @@ public class UIManager : MonoBehaviour
 			Destroy(gameObject);    
 		}
 		DontDestroyOnLoad(gameObject);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

@@ -9,7 +9,7 @@ public class TileScript : MonoBehaviour
 
     void Awake()
     {
-        tileID = (1000*transform.position.x) + transform.position.y + (0.001f*transform.position.z);
+        tileID = (100*transform.position.x) + transform.position.y + (0.01f*transform.position.z);
     }
 
     void Start()

@@ -577,7 +577,7 @@ PrefabInstance:
     - target: {fileID: 1690609711648447675, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
       propertyPath: m_Name
-      value: Enemy 1
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 1690609711648447675, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
@@ -607,6 +607,11 @@ PrefabInstance:
     - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
         type: 3}
       propertyPath: behaviour
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1851950065463025932, guid: b3356ad84e20946dcabee54dfd7bec39,
+        type: 3}
+      propertyPath: turnOrderRating
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1951281519783769207, guid: b3356ad84e20946dcabee54dfd7bec39,

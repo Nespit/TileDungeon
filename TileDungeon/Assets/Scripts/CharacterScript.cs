@@ -30,7 +30,7 @@ public class CharacterScript : MonoBehaviour
     public Text coinCounter;
     public Text winAnnouncement;
     public bool moving = false;
-    bool animationActive = false;
+    public bool animationActive = false;
     public int maxHealth;
     public int currentHealth;
     public int attackStrength;
@@ -44,6 +44,7 @@ public class CharacterScript : MonoBehaviour
     public bool turnActive = false;
     public AudioSource audioSource;
     public CharacterBehaviourType behaviour;
+    public bool skipAnimations = false;
 
     void Awake()
     {
@@ -73,6 +74,8 @@ public class CharacterScript : MonoBehaviour
             if(localListOfSceneObjectsToLoad != null && placedManually)
                 Destroy(gameObject);
         }
+        // else
+        //     GameManager.instance.SaveEvent += SaveFunction;
 
         AdjustCharacterPositionToTile();
     }
@@ -104,6 +107,7 @@ public class CharacterScript : MonoBehaviour
             GameManager.instance.SaveEvent -= SaveFunction;
         else if(gameObject.tag == "PlayerCharacter")
         {
+            GameManager.instance.SaveEvent -= SaveFunction;
             winAnnouncement.transform.gameObject.SetActive(true);
             winAnnouncement.text = "You died, that's it.";
             GameManager.instance.gameState = GameState.MainMenu;
@@ -132,7 +136,22 @@ public class CharacterScript : MonoBehaviour
 
     void MoveTowardsDestination(Vector3 destination)
     {
-        transform.position = Vector3.MoveTowards(transform.position, destination, movementSpeed*Time.deltaTime);
+    //     transform.position = Vector3.MoveTowards(transform.position, destination, movementSpeed*Time.deltaTime);
+        
+    //     Vector3 rayOrigin = transform.position;
+    //     Vector3 rayDirection = new Vector3(0,-1,0);
+        
+    //     myRay = new Ray(rayOrigin, rayDirection);
+        
+    //     RaycastHit hit;
+
+    //    if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+    //     {
+    //         transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
+    //         moveDestination = new Vector3(moveDestination.x, transform.position.y, moveDestination.z);
+    //     }
+        t1 = t1 +  movementSpeed*Time.deltaTime;
+        transform.position = Vector3.MoveTowards(initialPos, destination, t1);
         
         Vector3 rayOrigin = transform.position;
         Vector3 rayDirection = new Vector3(0,-1,0);
@@ -156,7 +175,7 @@ public class CharacterScript : MonoBehaviour
     }
     void LookTowards(Quaternion targetRotation)
     {
-       t0 = Mathf.Clamp01(t0 + Time.deltaTime * rotationSpeed);
+       t0 = t0 + Time.deltaTime * rotationSpeed;
     
        transform.rotation = Quaternion.Lerp(initialRotation, targetRotation, t0);
     }
@@ -165,7 +184,7 @@ public class CharacterScript : MonoBehaviour
     {
         yield return m_movementCondition;
         
-        if(t0 < 1)
+        if(t0 <= 1)
         {
             LookTowards(targetRotation);
         }
@@ -182,10 +201,20 @@ public class CharacterScript : MonoBehaviour
                 {
                     if(TurnManager.instance.rawTurnQueue[i] != null && TurnManager.instance.rawTurnQueue[i].gameObject.tag == "Enemy")
                     {
-                        if(Vector3.Distance(TurnManager.instance.rawTurnQueue[i].transform.position, transform.position) < 2f
+                        float distance = Vector3.Distance(TurnManager.instance.rawTurnQueue[i].transform.position, transform.position);
+                        if(distance < 2f
                            && TurnManager.instance.rawTurnQueue[i].behaviour == CharacterBehaviourType.proximity)
                         {
                             TurnManager.instance.rawTurnQueue[i].SetBehaviourTo(CharacterBehaviourType.aggressive);
+                        }
+                        else if(distance >= 10)
+                        {
+                            Debug.Log("SKipAnimations");
+                            TurnManager.instance.rawTurnQueue[i].skipAnimations = true;
+                        }
+                        else if(distance < 10)
+                        {
+                            TurnManager.instance.rawTurnQueue[i].skipAnimations = false;
                         }
                     }
                 }
@@ -197,7 +226,7 @@ public class CharacterScript : MonoBehaviour
         
         else
         {
-            if(startedWalking == false)
+            if(!startedWalking && !skipAnimations)
             {
                 audioSource.clip = SoundLibrary.instance.doorOpen;
                 audioSource.Play();
@@ -214,14 +243,14 @@ public class CharacterScript : MonoBehaviour
     {   
         yield return null;
 
-        if(t0 < 1)
+        if(t0 <= 1)
         {
             LookTowards(targetRotation);
         }
 
         else if(t1 < 0.8)
         {
-            t1 = Mathf.Clamp01(t1 + Time.deltaTime * attackSpeed);
+            t1 = t1 + Time.deltaTime * attackSpeed;
             transform.position = Vector3.Lerp(initialPos, moveDestination, t1);
             t2 = t1;
         } 
@@ -245,10 +274,10 @@ public class CharacterScript : MonoBehaviour
                 }
             }
             
-            t2 = Mathf.Clamp01(t2 - Time.deltaTime * attackSpeed);
+            t2 = t2 - Time.deltaTime * attackSpeed;
             transform.position = Vector3.Lerp(initialPos, moveDestination, t2);
             
-            if(t2 == 0)
+            if(t2 <= 0)
             {
                 t0 = 0;
                 t1 = 0;
@@ -267,31 +296,31 @@ public class CharacterScript : MonoBehaviour
     {
         yield return null;
 
-        if(t0 < 1)
+        if(t0 <= 1)
         {
             LookTowards(targetRotation);
         }
 
         else if(t1 < 0.8)
         {
-            t1 = Mathf.Clamp01(t1 + Time.deltaTime * attackSpeed);
+            t1 = t1 + Time.deltaTime * attackSpeed;
             transform.position = Vector3.Lerp(initialPos, moveDestination, t1);
             t2 = t1;
         } 
 
         else
         {
-            if(reachedDoor == false)
+            if(!reachedDoor && !skipAnimations)
             {
                 audioSource.clip = SoundLibrary.instance.doorLocked;
                 audioSource.Play();
                 reachedDoor = true;
             }
 
-            t2 = Mathf.Clamp01(t2 - Time.deltaTime * attackSpeed);
+            t2 = t2 - Time.deltaTime * attackSpeed;
             transform.position = Vector3.Lerp(initialPos, moveDestination, t2);
             
-            if(t2 == 0)
+            if(t2 <= 0)
             {
                 t0 = 0;
                 t1 = 0;
@@ -543,8 +572,19 @@ public class CharacterScript : MonoBehaviour
                 transform.parent = hit.transform;
             }
 
-            t0 = 0;
+            if(skipAnimations)
+            {
+                t0 = 1;
+                t1 = 1;
+            }
+            else
+            {   
+                t0 = 0;
+                t1 = 0;
+            }
+
             rotationSpeed = 2 / rotation90dSec;
+            initialPos = transform.position;
             initialRotation = transform.rotation;
             moveDestination = target;
             SetRotationTowardsTarget(target);
@@ -576,9 +616,20 @@ public class CharacterScript : MonoBehaviour
         --currentActionPoints;
         characterCanvas.RemoveActionPoints(1);
         Vector3 targetPosition = target.transform.position;
-        t0 = 0;
-        t1 = 0;
-        t2 = 0;
+
+        if(skipAnimations)
+        {
+            t0 = 1;
+            t1 = 1;
+            t2 = 0;
+        }
+        else
+        {
+            t0 = 0;
+            t1 = 0;
+            t2 = 0;
+        }
+        
         initialPos = transform.position;
         rotationSpeed = 2 / rotation90dSec;
         initialRotation = transform.rotation;
@@ -601,9 +652,20 @@ public class CharacterScript : MonoBehaviour
         }
         
         Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
-        t0 = 0;
-        t1 = 0;
-        t2 = 0;
+        
+        if(skipAnimations)
+        {
+            t0 = 1;
+            t1 = 1;
+            t2 = 0;
+        }
+        else
+        {
+            t0 = 0;
+            t1 = 0;
+            t2 = 0;
+        }
+        
         initialPos = transform.position;
         rotationSpeed = 2 / rotation90dSec;
         initialRotation = transform.rotation;

@@ -39,6 +39,8 @@ public class GameManager : MonoBehaviour
             filePath = Application.persistentDataPath + "/TileDungeon/SaveFiles/";
         else
             filePath = Application.persistentDataPath + "/SaveFiles/";
+
+        Application.targetFrameRate = 60;
 	}
 
     void Start()
@@ -80,14 +82,27 @@ public class GameManager : MonoBehaviour
         }      
     }
 
+    void InstantiateCharacter()
+    {
+        if(playerCharacter != null)
+            return;
+
+        var player = Instantiate(playerCharacterPrefab, transform.position, transform.rotation, transform);
+        playerCharacter = player.GetComponent<CharacterScript>();
+        playerCharacter.winAnnouncement = UIManager.instance.announcement;
+        playerCharacter.winAnnouncement.gameObject.SetActive(false);
+        playerCharacter.coinCounter = UIManager.instance.coinCounter;
+        InputManager.instance.character = playerCharacter;
+        CameraManager.instance.target = playerCharacter.transform;
+    }
+
     IEnumerator NewGame()
     {
         DiscardData();
 
-        // var player = Instantiate(playerCharacterPrefab);
-        // playerCharacter = player.GetComponent<CharacterScript>();
-        // playerCharacter.winAnnouncement = UIManager.instance.announcement;
-        // playerCharacter.winAnnouncement.gameObject.SetActive(false);
+        InstantiateCharacter();
+
+        yield return new WaitForEndOfFrame();
 
         if(SceneManager.sceneCount > 1)
         {
@@ -129,10 +144,9 @@ public class GameManager : MonoBehaviour
 
         DiscardData();
 
-        // var player = Instantiate(playerCharacterPrefab);
-        // playerCharacter = player.GetComponent<CharacterScript>();
-        // playerCharacter.winAnnouncement = UIManager.instance.announcement;
-        // playerCharacter.winAnnouncement.gameObject.SetActive(false);
+        InstantiateCharacter();
+
+        yield return new WaitForEndOfFrame();
 
         if(SceneManager.sceneCount > 1)
         {
@@ -150,7 +164,7 @@ public class GameManager : MonoBehaviour
 
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(savedGameData.SceneID).isLoaded);
         SceneManager.LoadScene(savedGameData.SceneID, LoadSceneMode.Additive);
-
+        
         playerCharacter.transform.position = savedGameData.position;
         CameraManager.instance.targetTargetPos = playerCharacter.transform.position;
         CameraManager.instance.transform.position = playerCharacter.transform.position + CameraManager.instance.offset[CameraManager.instance.offsetIndex];
@@ -166,7 +180,7 @@ public class GameManager : MonoBehaviour
             Menu();
         }
 
-        m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(savedGameData.SceneID)));
+        m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(savedGameData.SceneID), true));
     }
 
     public void LoadGame()
@@ -178,7 +192,7 @@ public class GameManager : MonoBehaviour
     {
         m_setSceneActive = StartCoroutine(NewGame());
     }
-    IEnumerator SetSceneActive(Scene scene)
+    IEnumerator SetSceneActive(Scene scene, bool loadSavedPlayerCharacter = false)
     {
         yield return m_setSceneActiveCondition;
         //Debug.Log("Scene loading finished, begin setting the scene active.");
@@ -217,9 +231,21 @@ public class GameManager : MonoBehaviour
 
             for (int i = 0; i < localListOfSceneObjectsToLoad.SavedCharacters.Count; i++)
             {
-                spawnedObject = Instantiate(enemyPrefab,
-                                            localListOfSceneObjectsToLoad.SavedCharacters[i].position,
-                                            localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
+                if(localListOfSceneObjectsToLoad.SavedCharacters[i].behaviour == CharacterBehaviourType.player && !loadSavedPlayerCharacter)
+                {    
+                    continue;
+                }
+                else if(localListOfSceneObjectsToLoad.SavedCharacters[i].behaviour == CharacterBehaviourType.player)
+                {
+                    spawnedObject = Instantiate(playerCharacterPrefab,
+                                                localListOfSceneObjectsToLoad.SavedCharacters[i].position,
+                                                localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
+                }
+                else
+                    spawnedObject = Instantiate(enemyPrefab,
+                                                localListOfSceneObjectsToLoad.SavedCharacters[i].position,
+                                                localListOfSceneObjectsToLoad.SavedCharacters[i].rotation);
+                
                 var script = spawnedObject.GetComponent<CharacterScript>();
                 script.SetCurrentHealth(localListOfSceneObjectsToLoad.SavedCharacters[i].currentHealth);
                 script.maxHealth = localListOfSceneObjectsToLoad.SavedCharacters[i].maxHealth;

@@ -57,6 +57,7 @@ MonoBehaviour:
   coinCounter: {fileID: 0}
   winAnnouncement: {fileID: 0}
   moving: 0
+  animationActive: 0
   maxHealth: 100
   currentHealth: 0
   attackStrength: 0
@@ -70,6 +71,7 @@ MonoBehaviour:
   turnActive: 0
   audioSource: {fileID: 1070646033223012180}
   behaviour: 0
+  skipAnimations: 0
 --- !u!65 &7966896353690670106
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -120,7 +122,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 10
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
