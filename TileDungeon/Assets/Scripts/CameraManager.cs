@@ -10,10 +10,11 @@ public class CameraManager : MonoBehaviour
     public Transform target;
     public Vector3 initialPos, targetPos, rotationTarget, velocity, targetTargetPos;
     public Vector3[] offset = new Vector3[4];
+    public Vector3 defaultOffset;
     WaitUntil m_cameraMovementCondition;
     Coroutine m_camera;
     public int offsetIndex = 0;
-    int zoomIndex = 0;
+    int zoomIndex = 2;
     public float cameraUpdateSpeed = 4;
     public float tUpdatePos = 2;
     Bounds transparencyArea;
@@ -24,7 +25,8 @@ public class CameraManager : MonoBehaviour
     public delegate void TransparencyDelegate(object sender, EventArgs args);
     public event TransparencyDelegate TransparencyEvent;
     public float boundingBoxSideLength;
-    bool rotating;
+    bool rotating, zooming;
+    Transform helperTransform;
 
     void Awake()
 	{
@@ -35,7 +37,9 @@ public class CameraManager : MonoBehaviour
 		}
 		DontDestroyOnLoad(gameObject);
 
-        offset[0] = transform.position - target.position;
+        helperTransform = new GameObject().transform;
+        defaultOffset = transform.position - target.position;
+        offset[0] = defaultOffset;
         offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
         offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
         offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
@@ -65,8 +69,12 @@ public class CameraManager : MonoBehaviour
         {
             UpdatePos();
         }
-        else if(rotating)
+        else if(rotating || zooming)
+        {
             rotating = false;
+            zooming = false;
+        }
+            
     }
 
     void UpdatePos()
@@ -74,7 +82,7 @@ public class CameraManager : MonoBehaviour
         tUpdatePos += Time.deltaTime * cameraUpdateSpeed;
         transform.position = Vector3.Lerp(initialPos, targetTargetPos + offset[offsetIndex], tUpdatePos);
 
-        if(rotating)
+        if(rotating || zooming)
             transform.LookAt(target);
     }
 
@@ -163,26 +171,36 @@ public class CameraManager : MonoBehaviour
         Vector3 originalPos = transform.position;
         Quaternion originalRot = transform.rotation;
 
-        transform.position = target.position + offset[0];
-        transform.LookAt(target);
-        transform.position = transform.position + (transform.forward * 1.9f);
+        if(zoomIndex == 2)
+        {
+            offset[0] = defaultOffset;
+            offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
+            offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
+            offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
+        }
+        else
+        {
+            transform.position = target.position + offset[0];
+            transform.LookAt(target);
+            transform.position = transform.position + (transform.forward * 1.9f);
 
-        offset[0] = transform.position - target.position;
-        offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
-        offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
-        offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
+            offset[0] = transform.position - target.position;
+            offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
+            offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
+            offset[3] = new Vector3(offset[0].z, offset[0].y, offset[0].x);
+        }
 
         transform.position = originalPos;
         transform.rotation = originalRot;
 
         targetPos = targetTargetPos + offset[offsetIndex];
-
+        zooming = true;
         m_camera = StartCoroutine(CalculateTransparencyAfterZoomingIn());
     }
 
     public void ZoomOut()
     {
-        if (zoomIndex == 2 || tUpdatePos < 1)
+        if (zoomIndex == 4 || tUpdatePos < 1)
             return;
 
         initialPos = transform.position;
@@ -192,10 +210,21 @@ public class CameraManager : MonoBehaviour
         Vector3 originalPos = transform.position;
         Quaternion originalRot = transform.rotation;
 
-        transform.position = target.position + offset[0];
-        transform.LookAt(target);
-        transform.position = transform.position + (transform.forward * -1.9f);
-
+        if(zoomIndex < 3)
+        {
+            transform.position = target.position + offset[0];
+            transform.LookAt(target);
+            transform.position = transform.position + (transform.forward * -1.9f);
+        } 
+        else if(zoomIndex == 3)
+        {
+            transform.position = target.position + (Vector3.up * 6) + (Vector3.forward * -0.001f);
+        }
+        else if(zoomIndex > 3)
+        {
+            transform.position = target.position + (Vector3.up * 7.9f) + (Vector3.forward * -0.001f);
+        }
+        
         offset[0] = transform.position - target.position;
         offset[1] = new Vector3(-offset[0].z, offset[0].y, offset[0].x);
         offset[2] = new Vector3(offset[0].x , offset[0].y, -offset[0].z);
@@ -212,6 +241,7 @@ public class CameraManager : MonoBehaviour
         transform.rotation = originalRot;
 
         targetPos = targetTargetPos + offset[offsetIndex];
+        zooming = true;
     }
 
     IEnumerator CalculateTransparencyAfterZoomingIn()
@@ -262,18 +292,26 @@ public class CameraManager : MonoBehaviour
 
     void CalculateStaticTransparencyBoundingBox(float length)
     {
+        if(zoomIndex > 2 && transparencyArea.extents.x > 0)
+        {
+            transparencyArea = new Bounds(helperTransform.position, Vector3.zero);
+            FireTransparencyCheck();
+            return;
+        }
+        else if(zoomIndex > 2)
+            return;
+
         Vector3 originalPos = transform.position;
         transform.position = targetTargetPos + offset[offsetIndex];
 
-        Transform center = new GameObject().transform;
-        center.position = new Vector3(targetTargetPos.x, targetTargetPos.y + length/4, targetTargetPos.z);
-        Vector3 faceTowards = new Vector3(transform.position.x, center.position.y, transform.position.z);
-        center.LookAt(faceTowards);
-        center.position += center.forward * (length/2 + 0.1f);
+        helperTransform.position = new Vector3(targetTargetPos.x, targetTargetPos.y + length/4, targetTargetPos.z);
+        Vector3 faceTowards = new Vector3(transform.position.x, helperTransform.position.y, transform.position.z);
+        helperTransform.LookAt(faceTowards);
+        helperTransform.position += helperTransform.forward * (length/2 + 0.1f);
 
-        pointBetweenCameraAndTarget = center.position;
+        pointBetweenCameraAndTarget = helperTransform.position;
 
-        transparencyArea = new Bounds(center.position, boundingBoxExtend);
+        transparencyArea = new Bounds(helperTransform.position, boundingBoxExtend);
 
         transform.position = originalPos;
         FireTransparencyCheck();
