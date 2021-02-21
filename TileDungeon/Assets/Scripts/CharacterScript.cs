@@ -116,7 +116,8 @@ public class CharacterScript : MonoBehaviour
 
     public void SaveFunction(object sender, EventArgs args)
     {
-        float tileID = transform.parent.GetComponent<TileScript>().tileID;
+        //float tileID = transform.parent.GetComponent<TileScript>().tileID;
+        int[] tileID = transform.parent.GetComponent<TileScript>().tileID;
 
         SavedCharacter savedCharacter = new SavedCharacter(tileID, transform.position, transform.rotation, currentHealth, 
                                                            maxHealth, attackStrength, defenseStrength, maxActionPoints, turnOrderRating, behaviour);

@@ -21,7 +21,9 @@ public class GameManager : MonoBehaviour
     public event SaveDelegate SaveEvent;
     public bool IsSceneBeingLoaded = false;
     public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab, playerCharacterPrefab;
-    public Dictionary<float, Transform> currentSceneTiles;
+    //public Dictionary<float, Transform> currentSceneTiles;
+    int mapSizeRoot = 30; //needs to be dividable by 2
+    public Transform[,] currentSceneTiles;
     public GameState gameState;
     public MainMenu mainMenu;
 
@@ -45,6 +47,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        currentSceneTiles = new Transform[mapSizeRoot,mapSizeRoot];
         SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
 
         InitializeSceneList();
@@ -81,7 +84,11 @@ public class GameManager : MonoBehaviour
             inputManager.ProcessInput();
         }      
     }
-
+    public int TileID(int tileID)
+    {
+        tileID = tileID + mapSizeRoot/2;
+        return tileID;
+    }
     void InstantiateCharacter()
     {
         if(playerCharacter != null)
@@ -212,19 +219,22 @@ public class GameManager : MonoBehaviour
                         spawnedObject = Instantiate(doorPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
+                        //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
                         break;
                     case InteractableObjectType.coin:
                         spawnedObject = Instantiate(coinPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
+                        //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
                         break;
                     case InteractableObjectType.key:
                         spawnedObject = Instantiate(keyPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
+                        //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
+                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
                         break;
                 }
             }
@@ -254,7 +264,8 @@ public class GameManager : MonoBehaviour
                 script.attackStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].attackStrength;
                 script.defenseStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].defenseStrength;
                 script.behaviour = localListOfSceneObjectsToLoad.SavedCharacters[i].behaviour;
-                spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
+                //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
+                spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[1])];
             }
         }
         else   
@@ -317,7 +328,8 @@ public class GameManager : MonoBehaviour
 
     void PrepareTileDictionary()
     {
-        currentSceneTiles = new Dictionary<float, Transform>();
+        //currentSceneTiles = new Dictionary<float, Transform>();
+        currentSceneTiles = new Transform[30,30];
     }
 
     public void InitializeSceneList()

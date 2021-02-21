@@ -26,7 +26,8 @@ public class InteractableObject : MonoBehaviour
 
     public void SaveFunction(object sender, EventArgs args)
     {
-        float tileID = transform.parent.GetComponent<TileScript>().tileID;
+        //float tileID = transform.parent.GetComponent<TileScript>().tileID;
+        int[] tileID = transform.parent.GetComponent<TileScript>().tileID;
         
         SavedInteractableObject savedObject = new SavedInteractableObject(tileID, transform.position, transform.rotation, objectType);
 

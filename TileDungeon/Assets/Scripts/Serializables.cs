@@ -7,12 +7,13 @@ using System;
 [Serializable]
 public class SavedInteractableObject //keys, coins, doors
 {
-    public float tileID;
+    //public float tileID;
+    public int[] tileID = new int[2];
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
     public InteractableObjectType objectType;
 
-    public SavedInteractableObject(float tileID, Vector3 position, Quaternion rotation, InteractableObjectType objectType)
+    public SavedInteractableObject(int[] tileID, Vector3 position, Quaternion rotation, InteractableObjectType objectType)
     {
         this.tileID = tileID;
         this.position = position;
@@ -24,7 +25,8 @@ public class SavedInteractableObject //keys, coins, doors
 [Serializable]
 public class SavedCharacter
 {   
-    public float tileID;
+    //public float tileID;
+    public int[] tileID = new int[2];
     public SerializableVector3 position;
     public SerializableQuaternion rotation;
     public int currentHealth;
@@ -35,7 +37,7 @@ public class SavedCharacter
     public int turnOrderRating; 
     public CharacterBehaviourType behaviour;
 
-    public SavedCharacter(float tileID, Vector3 position, Quaternion rotation, int currentHealth, 
+    public SavedCharacter(int[] tileID, Vector3 position, Quaternion rotation, int currentHealth, 
                           int maxHealth, int attackStrength, int defenseStrength, int maxActionPoints, int turnOrderRating, CharacterBehaviourType behaviour)
     {
         this.tileID = tileID;
