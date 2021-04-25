@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,10 +22,12 @@ public class GameManager : MonoBehaviour
     public bool IsSceneBeingLoaded = false;
     public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab, playerCharacterPrefab;
     //public Dictionary<float, Transform> currentSceneTiles;
-    int mapSizeRoot = 30; //needs to be dividable by 2
+    int mapSizeRoot = 100; //needs to be dividable by 2
     public Transform[,] currentSceneTiles;
+    public Node[,] currentSceneNodes;
     public GameState gameState;
     public MainMenu mainMenu;
+    public bool debugMode;
 
 
 	void Awake()
@@ -48,6 +50,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         currentSceneTiles = new Transform[mapSizeRoot,mapSizeRoot];
+        currentSceneNodes = new Node[mapSizeRoot,mapSizeRoot];
+
         SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
 
         InitializeSceneList();
@@ -84,11 +88,34 @@ public class GameManager : MonoBehaviour
             inputManager.ProcessInput();
         }      
     }
-    public int TileID(int tileID)
+    public int TileListIndexConversion(int tileID)
     {
         tileID = tileID + mapSizeRoot/2;
         return tileID;
     }
+
+    public List<Node> GetViableNodeNeighbours(Node node)
+    {
+        List<Node> neighbours = new List<Node>();
+
+        for(int x = -1; x <= 1; x++)
+        {
+            for(int z = -1; z <= 1; z++)
+            {
+                if(x == 0 && z == 0)
+                    continue;
+                
+                if(Mathf.Abs(node.position.x + x) <= mapSizeRoot && Mathf.Abs(node.position.z + z) <= mapSizeRoot &&
+                   currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)] != null && 
+                   !currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].closed && 
+                   currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].walkable)
+                    neighbours.Add(currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)]);
+            }
+        }
+
+        return neighbours;
+    }
+
     void InstantiateCharacter()
     {
         if(playerCharacter != null)
@@ -329,7 +356,8 @@ public class GameManager : MonoBehaviour
     void PrepareTileDictionary()
     {
         //currentSceneTiles = new Dictionary<float, Transform>();
-        currentSceneTiles = new Transform[30,30];
+        currentSceneTiles = new Transform[mapSizeRoot, mapSizeRoot];
+        currentSceneNodes = new Node[mapSizeRoot, mapSizeRoot];
     }
 
     public void InitializeSceneList()

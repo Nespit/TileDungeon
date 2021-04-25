@@ -337,8 +337,8 @@ public class CharacterScript : MonoBehaviour
     }
 
     bool AttemptMove(Vector3 target)
-    {
-        if(target.x < transform.position.x-1.49 ||
+    {   
+        /* if(target.x < transform.position.x-1.49 ||
            target.x > transform.position.x+1.49 ||
            target.z < transform.position.z-1.49 ||
            target.z > transform.position.z+1.49 ||
@@ -349,7 +349,7 @@ public class CharacterScript : MonoBehaviour
            moving || animationActive)
         {
             return false;
-        }
+        } */
 
         myRay = new Ray(new Vector3(target.x, target.y + 0.5f, target.z), new Vector3(0,-1,0));
 
@@ -357,7 +357,16 @@ public class CharacterScript : MonoBehaviour
 
         if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
         {
-            return CheckForTileInteractions(hit.collider.transform);
+            //Just for path finding debugging purposes
+            if(gameObject.tag == "PlayerCharacter")
+            {
+                Debug.Log("StartNode X: " + Mathf.RoundToInt(gameObject.transform.position.x).ToString() + "StartNode z: " + Mathf.RoundToInt(gameObject.transform.position.z).ToString() + ", " + 
+                            "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
+            
+                PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
+                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true);
+            }
+            //return CheckForTileInteractions(hit.collider.transform);
         }
 
         return false;

@@ -57,10 +57,22 @@ public class InputManager : MonoBehaviour
 
             if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
+                if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
+                {
+                    UIManager.instance.SelectTile(hit.transform.parent.transform);
+                    return;
+                }
+                
                 character.MoveToLocation(hit.transform.parent.transform.position);
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
+                if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.position)
+                {
+                    UIManager.instance.SelectTile(hit.transform);
+                    return;
+                }
+                
                 character.MoveToLocation(hit.transform.position);
             }
         }
