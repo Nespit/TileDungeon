@@ -18,6 +18,11 @@ public class TileScript : MonoBehaviour
     //     //tileID = (100*transform.position.x) + transform.position.y + (0.01f*transform.position.z);
     // }
 
+    void OnAwake()
+    {
+        
+    }
+
     void Start()
     {
         if(GameManager.instance.debugMode)
@@ -29,13 +34,19 @@ public class TileScript : MonoBehaviour
         tileID[0] = Mathf.RoundToInt(transform.position.x);
         tileID[1] = Mathf.RoundToInt(transform.position.z);
         float yPos = transform.position.y;
+        node = new Node(tileID[0], yPos, tileID[1], true);
+        
        //GameManager.instance.currentSceneTiles.Add(tileID, transform);
         GameManager.instance.currentSceneTiles[GameManager.instance.TileListIndexConversion(tileID[0]), GameManager.instance.TileListIndexConversion(tileID[1])] = transform;
         
-        node = new Node(tileID[0], yPos, tileID[1], true);
         GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(tileID[0]), GameManager.instance.TileListIndexConversion(tileID[1])] = node;
 
-        
+        PathfindingManager.instance.ResetEvent += ResetAssignment;
+    }
+
+    private void OnDestroy() 
+    {
+        PathfindingManager.instance.ResetEvent -= ResetAssignment;    
     }
 
     void Update()
@@ -51,7 +62,7 @@ public class TileScript : MonoBehaviour
             gCostField.text = node.gCost.ToString();
             hCostField.text = node.hCost.ToString();
 
-            if(node.closed || !node.walkable)
+            if(node.closed || !node.walkable || node.occupied)
             {
                 panel.color = Color.red;
             }
@@ -60,6 +71,20 @@ public class TileScript : MonoBehaviour
             {
                 panel.color = Color.green;
             }
+
+            if(!node.closed && !node.open && node.walkable && !node.occupied)
+            {
+                panel.color = Color.gray;
+            }
         }
+    }
+
+    public void ResetAssignment(object sender, EventArgs args)
+    {
+        node.hCost = 0;
+        node.gCost = 0;
+        node.parent = null;
+        node.open = false;
+        node.closed = false;
     }
 }

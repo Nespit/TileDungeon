@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class PathfindingManager : MonoBehaviour
 {
     public static PathfindingManager instance;
     public GameObject pathRendererParent;
     LineRenderer pathRenderer;
-    
-    List<Node> playerPath = new List<Node>();
+    public delegate void NodeResetDelegate(object sender, EventArgs args);
+    public event NodeResetDelegate ResetEvent;
 
     private void Awake() 
     {
@@ -25,8 +26,9 @@ public class PathfindingManager : MonoBehaviour
         pathRenderer = pathRendererParent.GetComponent<LineRenderer>();
     }
 
-    public void FindPath(Node startNode, Node targetNode, bool isPlayerPath)
+    public List<Node> FindPath(Node startNode, Node targetNode, bool isPlayerPath)
     {   
+        ResetEvent(null, null);
         List<Node> openSet = new List<Node>();
         HashSet<Node> closedSet = new HashSet<Node>();
         openSet.Add(startNode);
@@ -50,12 +52,18 @@ public class PathfindingManager : MonoBehaviour
 
             if (currentNode == targetNode) 
             {
-                RetracePath(startNode, targetNode, isPlayerPath);
-                DrawPath();
-                return;
+                List<Node> nodes;
+                
+                nodes = RetracePath(startNode, targetNode);
+                if(isPlayerPath) 
+                {
+                    DrawPath(nodes);
+                }
+
+                return nodes;
             }
 
-            foreach (Node neighbour in GameManager.instance.GetViableNodeNeighbours(currentNode))
+            foreach (Node neighbour in GameManager.instance.GetViableNodeNeighbours(currentNode, targetNode))
             {
                 int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
                 if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
@@ -68,14 +76,15 @@ public class PathfindingManager : MonoBehaviour
                     {
                         openSet.Add(neighbour);
                         neighbour.open = true;
-                    }
-                        
+                    }     
                 }
             }
         }
+
+        return null;
     }
 
-    void RetracePath(Node startNode, Node endNode, bool isPlayerPath)
+    List<Node> RetracePath(Node startNode, Node endNode)
     {
         List<Node> path = new List<Node>();
         Node currentNode = endNode;
@@ -90,21 +99,12 @@ public class PathfindingManager : MonoBehaviour
 
         path.Reverse();
 
-        if(isPlayerPath)
-        {
-            playerPath = path;
-        }
-            
+        return path;
 
-        for (int i = 0; i < path.Count; i++)
-        {
-            Debug.Log("Step " + i.ToString() + ": " + path[i].position.ToString());
-        }
-    }
-
-    void ClearNodes()
-    {
-        
+        // for (int i = 0; i < path.Count; i++)
+        // {
+        //     Debug.Log("Step " + i.ToString() + ": " + path[i].position.ToString());
+        // }
     }
 
     int GetDistance(Node nodeA, Node nodeB)
@@ -117,17 +117,17 @@ public class PathfindingManager : MonoBehaviour
         return 14*dstX + 10*(dstY-dstX);
     }
 
-    public void DrawPath()
-    {
+    public void DrawPath(List<Node> unitPath)
+    {   
         pathRenderer.gameObject.SetActive(true);
         
-        pathRenderer.positionCount = playerPath.Count;
+        pathRenderer.positionCount = unitPath.Count;
 
-        Debug.Log(playerPath.Count);
+        //Debug.Log(unitPath.Count);
 
-        for(int i = 0; i < playerPath.Count; i++)
+        for(int i = 0; i < unitPath.Count; i++)
         {
-            Vector3 vector = new Vector3(playerPath[i].position.x, playerPath[i].position.y + 0.1f, playerPath[i].position.z);
+            Vector3 vector = new Vector3(unitPath[i].position.x, unitPath[i].position.y + 0.1f, unitPath[i].position.z);
             pathRenderer.SetPosition(i, vector);
         }
     }

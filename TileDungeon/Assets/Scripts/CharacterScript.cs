@@ -13,9 +13,9 @@ public class CharacterScript : MonoBehaviour
     Quaternion targetRotation;
     Quaternion initialRotation;
     int layerMaskTile, layerMaskObject;
-    WaitUntil m_movementCondition, m_characterTurnCondition;
+    WaitUntil m_movementCondition, m_characterTurnCondition, m_followPathCondition;
     public Coroutine m_characterAnimation;
-    Coroutine m_characterTurn;
+    Coroutine m_characterTurn, m_followingPath;
     Ray myRay;
     public bool hasKey;
     int coinCount;
@@ -45,6 +45,7 @@ public class CharacterScript : MonoBehaviour
     public AudioSource audioSource;
     public CharacterBehaviourType behaviour;
     public bool skipAnimations = false;
+    List<Node> unitPath;
 
     void Awake()
     {
@@ -57,12 +58,14 @@ public class CharacterScript : MonoBehaviour
         targetRotation = transform.rotation;
         layerMaskTile = LayerMask.GetMask("Tiles");
         layerMaskObject = LayerMask.GetMask("Objects");
+        unitPath = new List<Node>();
         m_movementCondition = new WaitUntil(() => moving == true && animationActive == false);
+        m_followPathCondition = new WaitUntil(() => moving == false && animationActive == false);
         // currentActionPoints = maxActionPoints;
         // characterCanvas.SetActionPointsToMax(this);
         TurnManager.instance.TurnEvent += TurnOrderAssignment;
         SetBehaviourTo(behaviour);
-
+        
         SetHealthbarFill();
         
         if (gameObject.tag == "Enemy")
@@ -88,6 +91,7 @@ public class CharacterScript : MonoBehaviour
         if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
         {
             transform.parent = hit.transform;
+            StartCoroutine(AdjustNode(hit.transform));
             transform.position = new Vector3(hit.transform.position.x, hit.transform.position.y + offsetY, hit.transform.position.z);
 
             if(gameObject.tag == "PlayerCharacter")
@@ -97,6 +101,13 @@ public class CharacterScript : MonoBehaviour
                 CameraManager.instance.UpdateStaticTransparencyBoundingBox();
             }
         }
+    }
+
+    IEnumerator AdjustNode(Transform t)
+    {
+        WaitUntil wait = new WaitUntil(() => t.GetComponent<TileScript>().node != null);
+        yield return wait;
+        t.GetComponent<TileScript>().node.occupied = true;
     }
 
     public void OnDestroy()
@@ -133,6 +144,8 @@ public class CharacterScript : MonoBehaviour
             characterCanvas.SetActionPointsToMax(this);
             TurnManager.instance.rawTurnQueue.Add(this);
         }
+
+        unitPath = null;
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -192,7 +205,7 @@ public class CharacterScript : MonoBehaviour
             
         else if (transform.position == moveDestination)
         {
-            turnFinishedCheck();
+            turnFinished();
             moving = false;
 
             if(gameObject.tag == "PlayerCharacter")
@@ -210,7 +223,7 @@ public class CharacterScript : MonoBehaviour
                         }
                         else if(distance >= 10)
                         {
-                            Debug.Log("SKipAnimations");
+                            // Debug.Log("SKipAnimations");
                             TurnManager.instance.rawTurnQueue[i].skipAnimations = true;
                         }
                         else if(distance < 10)
@@ -283,7 +296,7 @@ public class CharacterScript : MonoBehaviour
                 t0 = 0;
                 t1 = 0;
                 animationActive = false;
-                turnFinishedCheck();
+                turnFinished();
                 StopCoroutine(m_characterAnimation);
                 m_characterAnimation = null;
                 yield break;
@@ -326,7 +339,7 @@ public class CharacterScript : MonoBehaviour
                 t0 = 0;
                 t1 = 0;
                 animationActive = false;
-                turnFinishedCheck();
+                turnFinished();
                 StopCoroutine(m_characterAnimation);
                 m_characterAnimation = null;
                 yield break;
@@ -357,19 +370,46 @@ public class CharacterScript : MonoBehaviour
 
         if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
         {
-            //Just for path finding debugging purposes
-            if(gameObject.tag == "PlayerCharacter")
-            {
-                Debug.Log("StartNode X: " + Mathf.RoundToInt(gameObject.transform.position.x).ToString() + "StartNode z: " + Mathf.RoundToInt(gameObject.transform.position.z).ToString() + ", " + 
-                            "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
-            
-                PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
-                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true);
-            }
-            //return CheckForTileInteractions(hit.collider.transform);
+            return CheckForTileInteractions(hit.collider.transform);
         }
 
         return false;
+    }
+
+    public bool TracePath(Vector3 target)
+    {
+        myRay = new Ray(new Vector3(target.x, target.y + 0.5f, target.z), new Vector3(0,-1,0));
+
+        RaycastHit hit;
+
+        if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
+        {
+            if(gameObject.tag == "PlayerCharacter")
+            {
+                // Debug.Log("StartNode X: " + Mathf.RoundToInt(gameObject.transform.position.x).ToString() + "StartNode z: " + Mathf.RoundToInt(gameObject.transform.position.z).ToString() + ", " + 
+                //             "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
+            
+                unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
+                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true);
+
+                if (unitPath != null && unitPath.Count > 0)
+                    return true;
+                else
+                    return false;
+
+            }
+            else
+            {
+                unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
+                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], false);
+                if (unitPath != null && unitPath.Count > 0)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        else
+            return false;
     }
 
     bool CheckForTileInteractions(Transform tile)
@@ -458,108 +498,132 @@ public class CharacterScript : MonoBehaviour
         }
     }
 
-    public void MoveForward()
-    {
-        Vector3 target = (transform.position+transform.forward); 
+    // public void MoveForward()
+    // {
+    //     Vector3 target = (transform.position+transform.forward); 
         
-        if(AttemptMove(target))
-        {
-            t0 = 1;
-            initialRotation = transform.rotation;
-            moveDestination = target;
-            SetRotationTowardsTarget(target);
-            moving = true;
-            m_characterAnimation = StartCoroutine(Movement());
+    //     if(AttemptMove(target))
+    //     {
+    //         t0 = 1;
+    //         initialRotation = transform.rotation;
+    //         moveDestination = target;
+    //         SetRotationTowardsTarget(target);
+    //         moving = true;
+    //         m_characterAnimation = StartCoroutine(Movement());
 
-            if (gameObject.tag == "PlayerCharacter")
-            {
-                CameraManager.instance.targetTargetPos = target;
-                CameraManager.instance.FollowTarget();
-            }
-        }
-    }
+    //         if (gameObject.tag == "PlayerCharacter")
+    //         {
+    //             CameraManager.instance.targetTargetPos = target;
+    //             CameraManager.instance.FollowTarget();
+    //         }
+    //     }
+    // }
 
-    public void MoveBackwards()
-    {
-        Vector3 target = (transform.position-transform.forward); 
+    // public void MoveBackwards()
+    // {
+    //     Vector3 target = (transform.position-transform.forward); 
         
-        if(AttemptMove(target))
-        {
-            t0 = 0;
-            rotationSpeed = 1 / rotation90dSec;
-            initialRotation = transform.rotation;
-            moveDestination = target;
-            SetRotationTowardsTarget(target);
-            moving = true;
-            m_characterAnimation = StartCoroutine(Movement());
+    //     if(AttemptMove(target))
+    //     {
+    //         t0 = 0;
+    //         rotationSpeed = 1 / rotation90dSec;
+    //         initialRotation = transform.rotation;
+    //         moveDestination = target;
+    //         SetRotationTowardsTarget(target);
+    //         moving = true;
+    //         m_characterAnimation = StartCoroutine(Movement());
 
-            if (gameObject.tag == "PlayerCharacter")
-            {
-                CameraManager.instance.targetTargetPos = target;
-                CameraManager.instance.FollowTarget();
-            }
-        }
-    }
+    //         if (gameObject.tag == "PlayerCharacter")
+    //         {
+    //             CameraManager.instance.targetTargetPos = target;
+    //             CameraManager.instance.FollowTarget();
+    //         }
+    //     }
+    // }
 
-    public void MoveRight()
-    {
-        Vector3 target = (transform.position+transform.right); 
+    // public void MoveRight()
+    // {
+    //     Vector3 target = (transform.position+transform.right); 
 
-        if(AttemptMove(target))
-        {
-            t0 = 0;
-            rotationSpeed = 2 / rotation90dSec;
-            initialRotation = transform.rotation;
-            moveDestination = target;
-            SetRotationTowardsTarget(target);
-            moving = true;
-            m_characterAnimation = StartCoroutine(Movement());
+    //     if(AttemptMove(target))
+    //     {
+    //         t0 = 0;
+    //         rotationSpeed = 2 / rotation90dSec;
+    //         initialRotation = transform.rotation;
+    //         moveDestination = target;
+    //         SetRotationTowardsTarget(target);
+    //         moving = true;
+    //         m_characterAnimation = StartCoroutine(Movement());
 
-            if (gameObject.tag == "PlayerCharacter")
-            {
-                CameraManager.instance.targetTargetPos = target;
-                CameraManager.instance.FollowTarget();
-            }
-        } 
-    }
+    //         if (gameObject.tag == "PlayerCharacter")
+    //         {
+    //             CameraManager.instance.targetTargetPos = target;
+    //             CameraManager.instance.FollowTarget();
+    //         }
+    //     } 
+    // }
 
-    public void MoveLeft()
-    {
-        Vector3 target = (transform.position-transform.right); 
+    // public void MoveLeft()
+    // {
+    //     Vector3 target = (transform.position-transform.right); 
 
-        if(AttemptMove(target))
-        {
-            t0 = 0;
-            rotationSpeed = 2 / rotation90dSec;
-            initialRotation = transform.rotation;
-            moveDestination = target;
-            SetRotationTowardsTarget(target);
-            moving = true;
-            m_characterAnimation = StartCoroutine(Movement());
+    //     if(AttemptMove(target))
+    //     {
+    //         t0 = 0;
+    //         rotationSpeed = 2 / rotation90dSec;
+    //         initialRotation = transform.rotation;
+    //         moveDestination = target;
+    //         SetRotationTowardsTarget(target);
+    //         moving = true;
+    //         m_characterAnimation = StartCoroutine(Movement());
 
             
-            if (gameObject.tag == "PlayerCharacter")
-            {
-                CameraManager.instance.targetTargetPos = target;
-                CameraManager.instance.FollowTarget();
-            }
+    //         if (gameObject.tag == "PlayerCharacter")
+    //         {
+    //             CameraManager.instance.targetTargetPos = target;
+    //             CameraManager.instance.FollowTarget();
+    //         }
+    //     } 
+    // }
+
+    public void StartFollowingPath()
+    {
+        m_followingPath = StartCoroutine(FollowingPath());
+    }
+
+    IEnumerator FollowingPath()
+    {
+        yield return m_followPathCondition;
+
+        if(unitPath == null)
+            yield break;
+
+        if(unitPath.Count > 1)
+        {
+            if(turnFinished())
+                yield break;
+            
+            MoveToNextLocationOnPath();
+            m_followingPath = StartCoroutine(FollowingPath());
         } 
     }
 
-    public void MoveToLocation(Vector3 target)
+    public void MoveToNextLocationOnPath()
     {   
-        if (gameObject.tag == "Enemy")
-        {
-            ++currentActionPoints;
-            characterCanvas.AddActionPoints(1);
-        }
+        if(unitPath == null || unitPath.Count < 2)
+            return;
 
-        if(turnFinishedCheck())
+        // if (gameObject.tag == "Enemy")
+        // {
+        //     AddActionPoint();
+        // }
+
+        if(turnFinished())
         {
             return;   
         }
         
-        target = new Vector3(target.x, target.y+offsetY, target.z);
+        Vector3 target = new Vector3(unitPath[1].position.x, unitPath[1].position.y+offsetY, unitPath[1].position.z);
 
         if(target == transform.position)
         {
@@ -570,8 +634,7 @@ public class CharacterScript : MonoBehaviour
         {
             if (gameObject.tag == "Enemy")
             {
-                --currentActionPoints;
-                characterCanvas.RemoveActionPoints(1);
+                RemoveActionPoint();
             }
 
             myRay = new Ray(new Vector3(target.x, target.y + 1f, target.z), new Vector3(0,-1,0));
@@ -579,7 +642,12 @@ public class CharacterScript : MonoBehaviour
 
             if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
             {
+                TileScript tile = transform.parent.GetComponent<TileScript>();
+                tile.node.occupied = false;
+
                 transform.parent = hit.transform;
+                tile = hit.transform.GetComponent<TileScript>();
+                tile.node.occupied = true;
             }
 
             if(skipAnimations)
@@ -601,30 +669,43 @@ public class CharacterScript : MonoBehaviour
             moving = true;
             m_characterAnimation = StartCoroutine(Movement());
 
+            unitPath.RemoveAt(0);
+
             if (gameObject.tag == "PlayerCharacter")
             {
-                --currentActionPoints;
-                characterCanvas.RemoveActionPoints(1);
+                RemoveActionPoint();
                 CameraManager.instance.targetTargetPos = target;
                 CameraManager.instance.FollowTarget();
+                PathfindingManager.instance.DrawPath(unitPath);
             }
         }
     }
 
-    
+    void AddActionPoint()
+    {
+        ++currentActionPoints;
+        characterCanvas.AddActionPoints(1);
+        // Debug.Log("Action Point added. Current points: " + currentActionPoints.ToString());
+    }
+
+    void RemoveActionPoint()
+    {
+        --currentActionPoints;
+        characterCanvas.RemoveActionPoints(1);
+        // Debug.Log("Action Point removed. Current points: " + currentActionPoints.ToString());
+    }
 
     public void Attack(CharacterScript target)
     {
         if(gameObject.tag == "PlayerCharacter")
         {
-            if(turnFinishedCheck())
+            if(turnFinished())
             {
                 return;   
             }
         }
         
-        --currentActionPoints;
-        characterCanvas.RemoveActionPoints(1);
+        RemoveActionPoint();
         Vector3 targetPosition = target.transform.position;
 
         if(skipAnimations)
@@ -657,8 +738,7 @@ public class CharacterScript : MonoBehaviour
     {
         if(gameObject.tag == "Enemy")
         {
-            --currentActionPoints;
-            characterCanvas.RemoveActionPoints(1);
+            RemoveActionPoint();
         }
         
         Vector3 targetPosition = new Vector3(target.position.x, transform.position.y, target.position.z);
@@ -765,6 +845,8 @@ public class CharacterScript : MonoBehaviour
         if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
         {
             transform.parent = hit.transform;
+            TileScript tile = hit.transform.GetComponent<TileScript>();
+            tile.node.occupied = true;
             transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
         }
 
@@ -781,45 +863,6 @@ public class CharacterScript : MonoBehaviour
     public void StartMoveToNextScene()
     {
         m_characterAnimation = StartCoroutine(MoveToNextScene());
-    }
-
-    public void AttemptMoveTowardsLocation(Vector3 target)
-    {
-        if(turnFinishedCheck())
-            return;
-
-        --currentActionPoints;
-        characterCanvas.RemoveActionPoints(1);
-
-        Quaternion originalRot = transform.rotation;
-        Vector3 originalPos = transform.position;
-
-        Vector3 faceTowards = new Vector3(target.x, transform.position.y, target.z);
-        transform.LookAt(faceTowards);
-        target = transform.position + transform.forward;
-        faceTowards = transform.position + transform.forward * 1.5f;
-
-        transform.position = originalPos;
-        transform.rotation = originalRot;
-
-        myRay = new Ray(new Vector3(target.x, target.y + 1f, target.z), new Vector3(0,-1,0));
-        RaycastHit hit;
-
-        if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
-        {
-            MoveToLocation(hit.transform.position);
-        }
-        else
-        {
-            myRay = new Ray(new Vector3(faceTowards.x, faceTowards.y + 1f, faceTowards.z), new Vector3(0,-1,0));
-            
-            if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
-            {
-                MoveToLocation(hit.transform.position);
-            }
-            else
-                turnFinishedCheck();
-        }
     }
 
     public void StartTurn()
@@ -843,13 +886,16 @@ public class CharacterScript : MonoBehaviour
                     {
                         var player = GameObject.FindGameObjectWithTag("PlayerCharacter");
 
-                        if(player != null)
-                            AttemptMoveTowardsLocation(player.transform.position);
-                        else
+                        if(player == null)
                         {
                             Debug.Log("Player can not be found. This should not happen");
                             turnActive = false;
                         }
+
+                        if(unitPath == null)
+                            TracePath(player.transform.position);
+                        
+                        MoveToNextLocationOnPath();
                     }
             
                     yield return m_characterTurnCondition;
@@ -877,7 +923,7 @@ public class CharacterScript : MonoBehaviour
         }
     }
 
-    bool turnFinishedCheck()
+    bool turnFinished()
     {
         if(currentActionPoints < 1)
         {

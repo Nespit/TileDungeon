@@ -29,7 +29,6 @@ public class GameManager : MonoBehaviour
     public MainMenu mainMenu;
     public bool debugMode;
 
-
 	void Awake()
 	{
 		if (instance == null) {
@@ -51,7 +50,6 @@ public class GameManager : MonoBehaviour
     {
         currentSceneTiles = new Transform[mapSizeRoot,mapSizeRoot];
         currentSceneNodes = new Node[mapSizeRoot,mapSizeRoot];
-
         SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
 
         InitializeSceneList();
@@ -94,7 +92,7 @@ public class GameManager : MonoBehaviour
         return tileID;
     }
 
-    public List<Node> GetViableNodeNeighbours(Node node)
+    public List<Node> GetViableNodeNeighbours(Node node, Node targetNode)
     {
         List<Node> neighbours = new List<Node>();
 
@@ -104,12 +102,19 @@ public class GameManager : MonoBehaviour
             {
                 if(x == 0 && z == 0)
                     continue;
+
+                if(currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)] == targetNode)
+                {
+                    neighbours.Add(currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)]);
+                    continue;
+                }
                 
                 if(Mathf.Abs(node.position.x + x) <= mapSizeRoot && Mathf.Abs(node.position.z + z) <= mapSizeRoot &&
-                   currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)] != null && 
-                   !currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].closed && 
-                   currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].walkable)
-                    neighbours.Add(currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)]);
+                    currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)] != null && 
+                    !currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].closed && 
+                    currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].walkable &&
+                    !currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)].occupied)
+                neighbours.Add(currentSceneNodes[TileListIndexConversion((int)node.position.x + x), TileListIndexConversion((int)node.position.z + z)]);
             }
         }
 

@@ -57,23 +57,25 @@ public class InputManager : MonoBehaviour
 
             if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
-                if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
+                if(UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
                 {
                     UIManager.instance.SelectTile(hit.transform.parent.transform);
+                    character.TracePath(hit.transform.parent.transform.position);
                     return;
                 }
                 
-                character.MoveToLocation(hit.transform.parent.transform.position);
+                character.StartFollowingPath();
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
-                if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.position)
+                if(UIManager.instance.tileSelector.transform.position != hit.transform.position)
                 {
                     UIManager.instance.SelectTile(hit.transform);
+                    character.TracePath(hit.transform.position);
                     return;
                 }
                 
-                character.MoveToLocation(hit.transform.position);
+                character.StartFollowingPath();
             }
         }
     }
@@ -184,11 +186,25 @@ public class InputManager : MonoBehaviour
 
                         if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
                         {
-                            character.MoveToLocation(hit.transform.parent.transform.position);
+                            if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
+                            {
+                                UIManager.instance.SelectTile(hit.transform.parent.transform);
+                                character.TracePath(hit.transform.parent.transform.position);
+                                return;
+                            }
+                            
+                            character.StartFollowingPath();
                         }
                         else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
                         {
-                            character.MoveToLocation(hit.transform.position);
+                            if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.position)
+                            {
+                                UIManager.instance.SelectTile(hit.transform);
+                                character.TracePath(hit.transform.position);
+                                return;
+                            }
+                            
+                            character.StartFollowingPath();
                         }
                     }
                 }

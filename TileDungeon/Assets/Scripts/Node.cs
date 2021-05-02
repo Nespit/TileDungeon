@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Node
 { 
-    public bool walkable;
+    public bool walkable, occupied;
     public bool open, closed;
     public int gCost;
     public int hCost;
@@ -20,6 +20,7 @@ public class Node
     {
         position = new Vector3(x, y, z);
         walkable = _walkable;
+        occupied = false;
         open = false;
         closed = false;
     }
