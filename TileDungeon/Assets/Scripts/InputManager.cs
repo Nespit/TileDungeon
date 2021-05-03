@@ -47,7 +47,7 @@ public class InputManager : MonoBehaviour
 
     void MouseClick()
     {
-        if(!character.turnActive)
+        if(!character.turnActive || GameManager.instance.gameState != GameState.Game)
             return;
 
         if (Input.GetMouseButtonUp(0)) //0 is the primary mouse button.
@@ -57,9 +57,9 @@ public class InputManager : MonoBehaviour
 
             if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
-                if(UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
+                if(Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) != Mathf.RoundToInt(hit.transform.parent.transform.position.x) || Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) != Mathf.RoundToInt(hit.transform.parent.transform.position.z))
                 {
-                    UIManager.instance.SelectTile(hit.transform.parent.transform);
+                    // UIManager.instance.SelectTile(hit.transform);
                     character.TracePath(hit.transform.parent.transform.position);
                     return;
                 }
@@ -68,9 +68,9 @@ public class InputManager : MonoBehaviour
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
-                if(UIManager.instance.tileSelector.transform.position != hit.transform.position)
+                if(Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) != Mathf.RoundToInt(hit.transform.position.x) || Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) != Mathf.RoundToInt(hit.transform.position.z))
                 {
-                    UIManager.instance.SelectTile(hit.transform);
+                    // UIManager.instance.SelectTile(hit.transform);
                     character.TracePath(hit.transform.position);
                     return;
                 }
@@ -94,7 +94,7 @@ public class InputManager : MonoBehaviour
 
     void Touch()
     {
-        if (Input.touchCount > 0)
+        if (Input.touchCount > 0 && GameManager.instance.gameState == GameState.Game)
         {
             Touch[] touch = new Touch[Input.touchCount];
 
@@ -188,7 +188,7 @@ public class InputManager : MonoBehaviour
                         {
                             if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
                             {
-                                UIManager.instance.SelectTile(hit.transform.parent.transform);
+                                // UIManager.instance.SelectTile(hit.transform.parent.transform);
                                 character.TracePath(hit.transform.parent.transform.position);
                                 return;
                             }
@@ -199,7 +199,7 @@ public class InputManager : MonoBehaviour
                         {
                             if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.position)
                             {
-                                UIManager.instance.SelectTile(hit.transform);
+                                // UIManager.instance.SelectTile(hit.transform);
                                 character.TracePath(hit.transform.position);
                                 return;
                             }

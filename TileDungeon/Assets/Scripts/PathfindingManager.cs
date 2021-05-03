@@ -26,7 +26,7 @@ public class PathfindingManager : MonoBehaviour
         pathRenderer = pathRendererParent.GetComponent<LineRenderer>();
     }
 
-    public List<Node> FindPath(Node startNode, Node targetNode, bool isPlayerPath)
+    public List<Node> FindPath(Node startNode, Node targetNode, bool isPlayerPath, int actionPoints = 0)
     {   
         ResetEvent(null, null);
         List<Node> openSet = new List<Node>();
@@ -57,7 +57,7 @@ public class PathfindingManager : MonoBehaviour
                 nodes = RetracePath(startNode, targetNode);
                 if(isPlayerPath) 
                 {
-                    DrawPath(nodes);
+                    DrawPath(nodes, actionPoints);
                 }
 
                 return nodes;
@@ -117,20 +117,57 @@ public class PathfindingManager : MonoBehaviour
         return 14*dstX + 10*(dstY-dstX);
     }
 
-    public void DrawPath(List<Node> unitPath)
+    public void DrawPath(List<Node> unitPath, int actionPoints)
     {   
-        pathRenderer.gameObject.SetActive(true);
+        if(pathRenderer.gameObject.activeInHierarchy == false)
+            pathRenderer.gameObject.SetActive(true);
         
         pathRenderer.positionCount = unitPath.Count;
-
-        //Debug.Log(unitPath.Count);
 
         for(int i = 0; i < unitPath.Count; i++)
         {
             Vector3 vector = new Vector3(unitPath[i].position.x, unitPath[i].position.y + 0.1f, unitPath[i].position.z);
             pathRenderer.SetPosition(i, vector);
         }
+
+        Gradient gradient = new Gradient();
+        gradient.mode = GradientMode.Fixed;
+        float alpha = 1.0f;
+
+        if(unitPath.Count-1 > actionPoints)
+        {
+            float redPosition = scale(0f, unitPath.Count-1.5f, 0f, 1f, actionPoints);
+            
+            gradient.SetKeys(
+                new GradientColorKey[] { new GradientColorKey(Color.green, redPosition), new GradientColorKey(Color.red, 1.0f) },
+                new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0f), new GradientAlphaKey(alpha, 1f) }
+            );
+
+            UIManager.instance.SelectTile(unitPath[unitPath.Count-1].position, false);
+        }
+        else
+        {
+            gradient.SetKeys(
+                new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f)},
+                new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0f)}
+            );
+
+            UIManager.instance.SelectTile(unitPath[unitPath.Count-1].position, true);
+        }
+
+        pathRenderer.colorGradient = gradient;
     }
+
+    public float scale(float OldMin, float OldMax, float NewMin, float NewMax, float OldValue)
+    {
+     
+        float OldRange = (OldMax - OldMin);
+        float NewRange = (NewMax - NewMin);
+        float NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+     
+        return(NewValue);
+    }
+
 
     public void HidePath()
     {

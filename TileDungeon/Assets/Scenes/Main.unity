@@ -1657,7 +1657,7 @@ MonoBehaviour:
     type: 3}
   gameState: 0
   mainMenu: {fileID: 1880581442}
-  debugMode: 1
+  debugMode: 0
 --- !u!4 &1212906904
 Transform:
   m_ObjectHideFlags: 0

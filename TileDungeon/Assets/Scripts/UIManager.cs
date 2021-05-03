@@ -33,9 +33,17 @@ public class UIManager : MonoBehaviour
         tileSelector.SetActive(false);
     }
 
-    public void SelectTile(Transform tile)
+    public void SelectTile(Vector3 position, bool inRange)
     {
-        tileSelector.transform.position = tile.transform.position;
+        tileSelector.transform.position = position;
+
+        MeshRenderer renderer = tileSelector.GetComponent<MeshRenderer>();
+        
+        if(inRange)
+            renderer.material.color = Color.green;
+        else
+            renderer.material.color = Color.red;
+
         tileSelector.SetActive(true);
     }
 

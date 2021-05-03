@@ -13,16 +13,6 @@ public class TileScript : MonoBehaviour
     public Text fCostField, hCostField, gCostField;
     public Image panel;
 
-    // void Awake()
-    // { 
-    //     //tileID = (100*transform.position.x) + transform.position.y + (0.01f*transform.position.z);
-    // }
-
-    void OnAwake()
-    {
-        
-    }
-
     void Start()
     {
         if(GameManager.instance.debugMode)
@@ -36,7 +26,6 @@ public class TileScript : MonoBehaviour
         float yPos = transform.position.y;
         node = new Node(tileID[0], yPos, tileID[1], true);
         
-       //GameManager.instance.currentSceneTiles.Add(tileID, transform);
         GameManager.instance.currentSceneTiles[GameManager.instance.TileListIndexConversion(tileID[0]), GameManager.instance.TileListIndexConversion(tileID[1])] = transform;
         
         GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(tileID[0]), GameManager.instance.TileListIndexConversion(tileID[1])] = node;
@@ -51,9 +40,9 @@ public class TileScript : MonoBehaviour
 
     void Update()
     {
-        if(GameManager.instance.debugMode)
+        if(GameManager.instance.debugMode && panel.gameObject.transform.parent.gameObject.activeInHierarchy == false)
             panel.gameObject.transform.parent.gameObject.SetActive(true);
-        else
+        else if(!GameManager.instance.debugMode && panel.gameObject.transform.parent.gameObject.activeInHierarchy == true)
             panel.gameObject.transform.parent.gameObject.SetActive(false);
         
         if(GameManager.instance.debugMode)

@@ -113,6 +113,10 @@ public class CharacterScript : MonoBehaviour
     public void OnDestroy()
     {
         TurnManager.instance.TurnEvent -= TurnOrderAssignment;
+        
+        TileScript t = transform.parent.GetComponent<TileScript>();
+        if(t != null)
+            t.node.occupied = false;
 
         if (gameObject.tag == "Enemy")
             GameManager.instance.SaveEvent -= SaveFunction;
@@ -145,7 +149,14 @@ public class CharacterScript : MonoBehaviour
             TurnManager.instance.rawTurnQueue.Add(this);
         }
 
-        unitPath = null;
+        //Reset unit's last path unless it's the player's
+        if(gameObject.tag == "PlayerCharacter" && UIManager.instance.tileSelector.activeInHierarchy == true && unitPath.Count > 1 &&
+           Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) ==  Mathf.RoundToInt(unitPath[unitPath.Count-1].position.x) &&  Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) ==  Mathf.RoundToInt(unitPath[unitPath.Count-1].position.z))
+            {
+                TracePath(unitPath[unitPath.Count-1].position);
+            }
+        else
+            unitPath = null;
     }
 
     void MoveTowardsDestination(Vector3 destination)
@@ -390,7 +401,7 @@ public class CharacterScript : MonoBehaviour
                 //             "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
             
                 unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
-                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true);
+                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true, currentActionPoints);
 
                 if (unitPath != null && unitPath.Count > 0)
                     return true;
@@ -611,7 +622,14 @@ public class CharacterScript : MonoBehaviour
     public void MoveToNextLocationOnPath()
     {   
         if(unitPath == null || unitPath.Count < 2)
+        {
+            if (gameObject.tag == "Enemy")
+            {
+                turnActive = false;
+            }
             return;
+        }
+            
 
         // if (gameObject.tag == "Enemy")
         // {
@@ -676,7 +694,7 @@ public class CharacterScript : MonoBehaviour
                 RemoveActionPoint();
                 CameraManager.instance.targetTargetPos = target;
                 CameraManager.instance.FollowTarget();
-                PathfindingManager.instance.DrawPath(unitPath);
+                PathfindingManager.instance.DrawPath(unitPath, currentActionPoints);
             }
         }
     }
