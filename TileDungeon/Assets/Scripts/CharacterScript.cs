@@ -83,7 +83,7 @@ public class CharacterScript : MonoBehaviour
         AdjustCharacterPositionToTile();
     }
 
-    void AdjustCharacterPositionToTile()
+    public void AdjustCharacterPositionToTile()
     {
         myRay = new Ray(new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z), new Vector3(0,-1,0));
         RaycastHit hit;
@@ -122,6 +122,7 @@ public class CharacterScript : MonoBehaviour
             GameManager.instance.SaveEvent -= SaveFunction;
         else if(gameObject.tag == "PlayerCharacter")
         {
+            Debug.Log(gameObject.scene.buildIndex);
             GameManager.instance.SaveEvent -= SaveFunction;
             winAnnouncement.transform.gameObject.SetActive(true);
             winAnnouncement.text = "You died, that's it.";
@@ -153,7 +154,7 @@ public class CharacterScript : MonoBehaviour
         if(gameObject.tag == "PlayerCharacter" && UIManager.instance.tileSelector.activeInHierarchy == true && unitPath.Count > 1 &&
            Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) ==  Mathf.RoundToInt(unitPath[unitPath.Count-1].position.x) &&  Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) ==  Mathf.RoundToInt(unitPath[unitPath.Count-1].position.z))
             {
-                TracePath(unitPath[unitPath.Count-1].position);
+                TracePath(unitPath[unitPath.Count-1]);
             }
         else
             unitPath = null;
@@ -221,6 +222,10 @@ public class CharacterScript : MonoBehaviour
 
             if(gameObject.tag == "PlayerCharacter")
             {
+                TileScript playerTile = transform.parent.GetComponent<TileScript>();
+                UIManager.instance.HighlightReachableTiles(playerTile, currentActionPoints);
+
+
                 //Character proximity behaviour changes
                 for(int i = 0; i < TurnManager.instance.rawTurnQueue.Count; ++i)
                 {
@@ -307,7 +312,11 @@ public class CharacterScript : MonoBehaviour
                 t0 = 0;
                 t1 = 0;
                 animationActive = false;
-                turnFinished();
+                if(!turnFinished() && gameObject.tag == "PlayerCharacter")
+                {
+                    TileScript playerTile = transform.parent.GetComponent<TileScript>();
+                    UIManager.instance.HighlightReachableTiles(playerTile, currentActionPoints);
+                }
                 StopCoroutine(m_characterAnimation);
                 m_characterAnimation = null;
                 yield break;
@@ -387,40 +396,31 @@ public class CharacterScript : MonoBehaviour
         return false;
     }
 
-    public bool TracePath(Vector3 target)
+    public bool TracePath(Node targetNode)
     {
-        myRay = new Ray(new Vector3(target.x, target.y + 0.5f, target.z), new Vector3(0,-1,0));
-
-        RaycastHit hit;
-
-        if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
+        if(gameObject.tag == "PlayerCharacter")
         {
-            if(gameObject.tag == "PlayerCharacter")
-            {
-                // Debug.Log("StartNode X: " + Mathf.RoundToInt(gameObject.transform.position.x).ToString() + "StartNode z: " + Mathf.RoundToInt(gameObject.transform.position.z).ToString() + ", " + 
-                //             "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
-            
-                unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
-                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], true, currentActionPoints);
+            // Debug.Log("StartNode X: " + Mathf.RoundToInt(gameObject.transform.position.x).ToString() + "StartNode z: " + Mathf.RoundToInt(gameObject.transform.position.z).ToString() + ", " + 
+            //             "TargetNode X: " + Mathf.RoundToInt(hit.collider.transform.position.x).ToString() + "TargetNode z: " + Mathf.RoundToInt(hit.collider.transform.position.z).ToString());
+        
+            unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
+                                                    GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(targetNode.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(targetNode.position.z))], true, currentActionPoints);
 
-                if (unitPath != null && unitPath.Count > 0)
-                    return true;
-                else
-                    return false;
-
-            }
+            if (unitPath != null && unitPath.Count > 0)
+                return true;
             else
-            {
-                unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
-                                                        GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.collider.transform.position.z))], false);
-                if (unitPath != null && unitPath.Count > 0)
-                    return true;
-                else
-                    return false;
-            }
+                return false;
+
         }
         else
-            return false;
+        {
+            unitPath = PathfindingManager.instance.FindPath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(gameObject.transform.position.z))],
+                                                    GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(targetNode.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(targetNode.position.z))], false);
+            if (unitPath != null && unitPath.Count > 0)
+                return true;
+            else
+                return false;
+        }
     }
 
     bool CheckForTileInteractions(Transform tile)
@@ -467,13 +467,25 @@ public class CharacterScript : MonoBehaviour
             {
                 moving = true;
                 StartMoveToPreviousScene();
+                return true;
             }
             if(t.tag == "StairDown" && gameObject.tag == "PlayerCharacter")
             {
                 moving = true;
                 StartMoveToNextScene();
+                return true;
             }
         }
+
+        
+        TileScript tr = transform.parent.GetComponent<TileScript>();
+        tr.node.occupied = false;
+        
+        tr = tile.GetComponent<TileScript>();
+        transform.parent = tr.transform;
+        tr.node.occupied = true;
+        
+
         return true;
     }
 
@@ -655,19 +667,6 @@ public class CharacterScript : MonoBehaviour
                 RemoveActionPoint();
             }
 
-            myRay = new Ray(new Vector3(target.x, target.y + 1f, target.z), new Vector3(0,-1,0));
-            RaycastHit hit;
-
-            if(Physics.Raycast(myRay, out hit, 4, layerMaskTile))
-            {
-                TileScript tile = transform.parent.GetComponent<TileScript>();
-                tile.node.occupied = false;
-
-                transform.parent = hit.transform;
-                tile = hit.transform.GetComponent<TileScript>();
-                tile.node.occupied = true;
-            }
-
             if(skipAnimations)
             {
                 t0 = 1;
@@ -809,11 +808,11 @@ public class CharacterScript : MonoBehaviour
 
     IEnumerator MoveToPreviousScene()
     {
+        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
+
         WaitUntil moveUp = new WaitUntil(() => moving == false);
 
         yield return moveUp;
-        
-        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
 
         GameManager.instance.MoveToPreviousScene();
 
@@ -821,11 +820,11 @@ public class CharacterScript : MonoBehaviour
     }
     IEnumerator MoveToNextScene()
     {
+        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
+        
         WaitUntil moveDown = new WaitUntil(() => moving == false);
         
         yield return moveDown;               
-        
-        transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
 
         GameManager.instance.MoveToNextScene();  
 
@@ -850,23 +849,22 @@ public class CharacterScript : MonoBehaviour
 
         transform.position = target.position;
         transform.position = transform.position + transform.forward;
-        // CameraManager.instance.targetTargetPos = transform.position;
-        // CameraManager.instance.tUpdatePos = 1;
+        AdjustCharacterPositionToTile();
 
-        Vector3 rayOrigin = new Vector3(transform.position.x, transform.position.y+1, transform.position.z);
-        Vector3 rayDirection = new Vector3(0,-1,0);
+        // Vector3 rayOrigin = new Vector3(transform.position.x, transform.position.y+1, transform.position.z);
+        // Vector3 rayDirection = new Vector3(0,-1,0);
         
-        myRay = new Ray(rayOrigin, rayDirection);
+        // myRay = new Ray(rayOrigin, rayDirection);
         
-        RaycastHit hit;
+        // RaycastHit hit;
 
-        if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
-        {
-            transform.parent = hit.transform;
-            TileScript tile = hit.transform.GetComponent<TileScript>();
-            tile.node.occupied = true;
-            transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
-        }
+        // if(Physics.Raycast(myRay, out hit, 2, layerMaskTile))
+        // {
+        //     transform.parent = hit.transform;
+        //     TileScript tile = hit.transform.GetComponent<TileScript>();
+        //     tile.node.occupied = true;
+        //     transform.position = new Vector3(transform.position.x, hit.point.y + offsetY, transform.position.z);
+        // }
 
         CameraManager.instance.targetTargetPos = transform.position;
         CameraManager.instance.EnterSceneCameraUpdate();
@@ -886,7 +884,17 @@ public class CharacterScript : MonoBehaviour
     public void StartTurn()
     {
         if(gameObject.tag == "PlayerCharacter")
+        {
             m_characterTurnCondition = new WaitUntil(() => turnActive == false);
+            
+
+            if(transform.parent != null)
+            {
+                TileScript playerTile = transform.parent.GetComponent<TileScript>();
+                UIManager.instance.HighlightReachableTiles(playerTile, currentActionPoints);
+            }
+               
+        }
         else if (gameObject.tag == "Enemy")
             m_characterTurnCondition = new WaitUntil(() => !animationActive && !moving);
         m_characterTurn = StartCoroutine(TakeTurn());
@@ -911,7 +919,7 @@ public class CharacterScript : MonoBehaviour
                         }
 
                         if(unitPath == null)
-                            TracePath(player.transform.position);
+                            TracePath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(player.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(player.transform.position.z))]);
                         
                         MoveToNextLocationOnPath();
                     }
@@ -946,6 +954,10 @@ public class CharacterScript : MonoBehaviour
         if(currentActionPoints < 1)
         {
             turnActive = false;
+            if(gameObject.tag == "PlayerCharacter")
+            {
+                UIManager.instance.UnHighlightLitTiles();
+            }
             return true;
         }
         else

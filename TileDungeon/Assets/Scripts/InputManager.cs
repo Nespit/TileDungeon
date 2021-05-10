@@ -57,10 +57,12 @@ public class InputManager : MonoBehaviour
 
             if (Physics.Raycast(myRay, out hit, 1000, layerMaskObject))
             {
+                
                 if(Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) != Mathf.RoundToInt(hit.transform.parent.transform.position.x) || Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) != Mathf.RoundToInt(hit.transform.parent.transform.position.z))
                 {
                     // UIManager.instance.SelectTile(hit.transform);
-                    character.TracePath(hit.transform.parent.transform.position);
+                    character.TracePath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.parent.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.parent.transform.position.z))]);
+                    Debug.Log("Hit");
                     return;
                 }
                 
@@ -68,10 +70,12 @@ public class InputManager : MonoBehaviour
             }
             else if (Physics.Raycast(myRay, out hit, 1000, layerMaskTile))
             {
+                
                 if(Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.x) != Mathf.RoundToInt(hit.transform.position.x) || Mathf.RoundToInt(UIManager.instance.tileSelector.transform.position.z) != Mathf.RoundToInt(hit.transform.position.z))
                 {
                     // UIManager.instance.SelectTile(hit.transform);
-                    character.TracePath(hit.transform.position);
+                    character.TracePath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.position.z))]);
+                    Debug.Log("Hit");
                     return;
                 }
                 
@@ -189,7 +193,7 @@ public class InputManager : MonoBehaviour
                             if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.parent.transform.position)
                             {
                                 // UIManager.instance.SelectTile(hit.transform.parent.transform);
-                                character.TracePath(hit.transform.parent.transform.position);
+                                character.TracePath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.parent.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.parent.transform.position.z))]);
                                 return;
                             }
                             
@@ -200,7 +204,7 @@ public class InputManager : MonoBehaviour
                             if(!UIManager.instance.tileSelector.activeSelf || UIManager.instance.tileSelector.transform.position != hit.transform.position)
                             {
                                 // UIManager.instance.SelectTile(hit.transform);
-                                character.TracePath(hit.transform.position);
+                                character.TracePath(GameManager.instance.currentSceneNodes[GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.position.x)), GameManager.instance.TileListIndexConversion(Mathf.RoundToInt(hit.transform.position.z))]);
                                 return;
                             }
                             

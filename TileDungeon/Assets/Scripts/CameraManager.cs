@@ -52,7 +52,7 @@ public class CameraManager : MonoBehaviour
 
     void Start()
     {
-        
+
     }
     
     void LateUpdate()

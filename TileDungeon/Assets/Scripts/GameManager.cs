@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     public GameObject keyPrefab, coinPrefab, doorPrefab, enemyPrefab, playerCharacterPrefab;
     //public Dictionary<float, Transform> currentSceneTiles;
     int mapSizeRoot = 100; //needs to be dividable by 2
-    public Transform[,] currentSceneTiles;
+    public TileScript[,] currentSceneTiles;
     public Node[,] currentSceneNodes;
     public GameState gameState;
     public MainMenu mainMenu;
@@ -48,12 +48,12 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        currentSceneTiles = new Transform[mapSizeRoot,mapSizeRoot];
+        currentSceneTiles = new TileScript[mapSizeRoot,mapSizeRoot];
         currentSceneNodes = new Node[mapSizeRoot,mapSizeRoot];
         SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
 
         InitializeSceneList();
-        PrepareTileDictionary();
+        PrepareTileListAndNodeList();
 
         playerCharacter = GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>();
         inputManager = GameObject.FindGameObjectWithTag("InputManager").GetComponent<InputManager>();
@@ -82,7 +82,7 @@ public class GameManager : MonoBehaviour
     {
         if(gameState == GameState.Game && !IsSceneBeingLoaded)
         {
-            TurnManager.instance.Turn();
+            //TurnManager.instance.Turn();
             inputManager.ProcessInput();
         }      
     }
@@ -120,6 +120,36 @@ public class GameManager : MonoBehaviour
 
         return neighbours;
     }
+    public List<TileScript> GetReachableTileNeighboursInRadius(TileScript tile, int radius)
+    {
+        List<TileScript> neighbours = new List<TileScript>();
+
+        for(int x = -radius; x <= radius; x++)
+        {
+            for(int z = -radius; z <= radius; z++)
+            {
+                if(x == 0 && z == 0)
+                    continue;
+
+                
+                if(Mathf.Abs(tile.node.position.x + x) <= mapSizeRoot && Mathf.Abs(tile.node.position.z + z) <= mapSizeRoot &&
+                    currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)] != null &&  
+                    currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)].node.walkable)
+                neighbours.Add(currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)]);
+            }
+        }
+
+        for(int i = 0; i < neighbours.Count; ++i)
+        {
+            if(PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false) == null || PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false).Count < 1)
+            {
+                neighbours.RemoveAt(i);
+                --i;
+            } 
+        }
+
+        return neighbours;
+    }
 
     void InstantiateCharacter()
     {
@@ -145,7 +175,7 @@ public class GameManager : MonoBehaviour
 
         if(SceneManager.sceneCount > 1)
         {
-            playerCharacter.transform.parent = transform;
+            playerCharacter.transform.parent = GameObject.FindGameObjectWithTag("MainSceneAnchor").transform;
             Scene scene = SceneManager.GetActiveScene();
 
             m_setSceneActiveCondition = new WaitUntil(() => !scene.isLoaded);
@@ -252,21 +282,21 @@ public class GameManager : MonoBehaviour
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
+                        spawnedObject.transform.parent = currentSceneTiles[(TileListIndexConversion(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0])), TileListIndexConversion((localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1]))].transform;
                         break;
                     case InteractableObjectType.coin:
                         spawnedObject = Instantiate(coinPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];                            
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
+                        spawnedObject.transform.parent = currentSceneTiles[TileListIndexConversion((localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0])), TileListIndexConversion((localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1]))].transform;
                         break;
                     case InteractableObjectType.key:
                         spawnedObject = Instantiate(keyPrefab,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].position,
                                                     localListOfSceneObjectsToLoad.SavedInteractableObjects[i].rotation);
                         //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID)];
-                        spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1])];
+                        spawnedObject.transform.parent = currentSceneTiles[TileListIndexConversion((localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[0])), TileListIndexConversion((localListOfSceneObjectsToLoad.SavedInteractableObjects[i].tileID[1]))].transform;
                         break;
                 }
             }
@@ -297,16 +327,17 @@ public class GameManager : MonoBehaviour
                 script.defenseStrength = localListOfSceneObjectsToLoad.SavedCharacters[i].defenseStrength;
                 script.behaviour = localListOfSceneObjectsToLoad.SavedCharacters[i].behaviour;
                 //spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID)];
-                spawnedObject.transform.parent = currentSceneTiles[(localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[0]), (localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[1])];
+                spawnedObject.transform.parent = currentSceneTiles[TileListIndexConversion((localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[0])), TileListIndexConversion((localListOfSceneObjectsToLoad.SavedCharacters[i].tileID[1]))].transform;
             }
         }
         else   
             InitializeSceneList();
-
-        CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         
+        GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>().AdjustCharacterPositionToTile();
         yield return new WaitForFixedUpdate();
+        
         TurnManager.instance.StartNewTurn();
+        //CameraManager.instance.UpdateStaticTransparencyBoundingBox();
         IsSceneBeingLoaded = false;
         m_setSceneActive = null;
     }
@@ -326,14 +357,14 @@ public class GameManager : MonoBehaviour
         
         InitializeSceneList();
         SaveData();
-        PrepareTileDictionary();
+        PrepareTileListAndNodeList();
 
         IsSceneBeingLoaded = true;
 
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex+1).isLoaded);
         SceneManager.LoadSceneAsync((currentSceneIndex+1), LoadSceneMode.Additive);
-        SceneManager.UnloadSceneAsync(currentSceneIndex);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex+1)));
+        SceneManager.UnloadSceneAsync(currentSceneIndex);
     }
 
     public void MoveToPreviousScene()
@@ -349,19 +380,19 @@ public class GameManager : MonoBehaviour
         
         InitializeSceneList();
         SaveData();
-        PrepareTileDictionary();
+        PrepareTileListAndNodeList();
 
         IsSceneBeingLoaded = true;
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
         SceneManager.LoadSceneAsync(currentSceneIndex-1, LoadSceneMode.Additive);
-        SceneManager.UnloadSceneAsync(currentSceneIndex);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1)));
+        SceneManager.UnloadSceneAsync(currentSceneIndex);
     }
 
-    void PrepareTileDictionary()
+    void PrepareTileListAndNodeList()
     {
         //currentSceneTiles = new Dictionary<float, Transform>();
-        currentSceneTiles = new Transform[mapSizeRoot, mapSizeRoot];
+        currentSceneTiles = new TileScript[mapSizeRoot, mapSizeRoot];
         currentSceneNodes = new Node[mapSizeRoot, mapSizeRoot];
     }
 
@@ -472,7 +503,7 @@ public class GameManager : MonoBehaviour
         {
             savedLists = new List<SavedListsPerScene>();
             savedGameData = null;
-            PrepareTileDictionary();
+            PrepareTileListAndNodeList();
         }
     }
 

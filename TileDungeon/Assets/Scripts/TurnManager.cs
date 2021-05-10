@@ -104,5 +104,7 @@ public class TurnManager : MonoBehaviour
             }
         }
         ++turnOrderIndex;
+
+        StartNewTurn();
     }
 }

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8121657943557352826}
   - component: {fileID: 8121657943557352827}
   m_Layer: 0
-  m_Name: TileSelector
+  m_Name: TileSelectorSquare
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

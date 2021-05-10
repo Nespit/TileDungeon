@@ -1020,7 +1020,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   announcement: {fileID: 1827488530}
   coinCounter: {fileID: 266958682}
-  tileSelectorPrefab: {fileID: 8121657943557352824, guid: 73a491a40fa1a954ab98e47f9d4f79d3,
+  tileSelectorPrefab: {fileID: 4676368866846373374, guid: a0a38facbe309a54492fa162b973c8d5,
     type: 3}
   tileSelector: {fileID: 0}
   activityIndicatorPrefab: {fileID: 0}
@@ -2620,6 +2620,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4019564646714500773, guid: ba4567def64e08d4fbe5922c71fb0a68,
+        type: 3}
+      propertyPath: m_Parameters.widthMultiplier
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 4019564646714500794, guid: ba4567def64e08d4fbe5922c71fb0a68,
         type: 3}
       propertyPath: m_Name
@@ -2652,7 +2657,7 @@ PrefabInstance:
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.08
       objectReference: {fileID: 0}
     - target: {fileID: 2872151554569567737, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
