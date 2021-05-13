@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
     CharacterScript playerCharacter;
     InputManager inputManager;
     CameraManager cameraManager;
-    public WaitUntil m_setSceneActiveCondition;
-    Coroutine m_setSceneActive;
+    public WaitUntil m_setSceneActiveCondition, m_unloadedPreviousScene;
+    public Coroutine m_setSceneActive, m_changeScene;
     public List<SavedListsPerScene> savedLists;
     public SavedDataPerGame savedGameData;
     public delegate void SaveDelegate(object sender, EventArgs args);
@@ -120,13 +120,16 @@ public class GameManager : MonoBehaviour
 
         return neighbours;
     }
-    public List<TileScript> GetReachableTileNeighboursInRadius(TileScript tile, int radius)
+    public List<TileScript> GetReachableTileNeighboursInRadius(TileScript tile, int maxPathLength)
     {
+        if(tile == null)
+            return null;
+        
         List<TileScript> neighbours = new List<TileScript>();
 
-        for(int x = -radius; x <= radius; x++)
+        for(int x = -maxPathLength; x <= maxPathLength; x++)
         {
-            for(int z = -radius; z <= radius; z++)
+            for(int z = -maxPathLength; z <= maxPathLength; z++)
             {
                 if(x == 0 && z == 0)
                     continue;
@@ -135,18 +138,26 @@ public class GameManager : MonoBehaviour
                 if(Mathf.Abs(tile.node.position.x + x) <= mapSizeRoot && Mathf.Abs(tile.node.position.z + z) <= mapSizeRoot &&
                     currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)] != null &&  
                     currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)].node.walkable)
-                neighbours.Add(currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)]);
+                    {
+                        if(PathfindingManager.instance.FindPath(tile.node, currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)].node, false) == null)
+                            continue;
+                            
+                        int pathLength = PathfindingManager.instance.FindPath(tile.node, currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)].node, false).Count;
+
+                        if (pathLength > 1 && pathLength <= maxPathLength+1)
+                            neighbours.Add(currentSceneTiles[TileListIndexConversion((int)tile.node.position.x + x), TileListIndexConversion((int)tile.node.position.z + z)]);
+                    }
             }
         }
 
-        for(int i = 0; i < neighbours.Count; ++i)
-        {
-            if(PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false) == null || PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false).Count < 1)
-            {
-                neighbours.RemoveAt(i);
-                --i;
-            } 
-        }
+        // for(int i = 0; i < neighbours.Count; ++i)
+        // {
+        //     if(PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false) == null || PathfindingManager.instance.FindPath(tile.node, neighbours[i].node, false).Count < 1)
+        //     {
+        //         neighbours.RemoveAt(i);
+        //         --i;
+        //     } 
+        // }
 
         return neighbours;
     }
@@ -333,7 +344,6 @@ public class GameManager : MonoBehaviour
         else   
             InitializeSceneList();
         
-        GameObject.FindGameObjectWithTag("PlayerCharacter").GetComponent<CharacterScript>().AdjustCharacterPositionToTile();
         yield return new WaitForFixedUpdate();
         
         TurnManager.instance.StartNewTurn();
@@ -342,7 +352,7 @@ public class GameManager : MonoBehaviour
         m_setSceneActive = null;
     }
 
-    public void MoveToNextScene()
+    public IEnumerator MoveToNextScene()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         //Debug.Log("Current Scene Index = " + currentSceneIndex);
@@ -352,7 +362,7 @@ public class GameManager : MonoBehaviour
         if(currentSceneIndex + 1 >= sceneCount)
         {
             //Debug.Log("Tried loading an invalid scene. Number of scenes in the build settings = " + sceneCount + ". Index of scene that was attempted to be loaded = " + (currentSceneIndex + 1));
-            return;
+            yield break;
         }
         
         InitializeSceneList();
@@ -362,12 +372,14 @@ public class GameManager : MonoBehaviour
         IsSceneBeingLoaded = true;
 
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex+1).isLoaded);
+        m_unloadedPreviousScene = new WaitUntil(() => !SceneManager.GetSceneByBuildIndex(currentSceneIndex).isLoaded);
         SceneManager.LoadSceneAsync((currentSceneIndex+1), LoadSceneMode.Additive);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex+1)));
+        yield return m_setSceneActiveCondition;
         SceneManager.UnloadSceneAsync(currentSceneIndex);
     }
 
-    public void MoveToPreviousScene()
+    public IEnumerator MoveToPreviousScene()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         //Debug.Log("Current Scene Index = " + currentSceneIndex);
@@ -375,7 +387,7 @@ public class GameManager : MonoBehaviour
 
         if(currentSceneIndex - 1 < 1)
         {
-            return;
+           yield break;
         }
         
         InitializeSceneList();
@@ -384,8 +396,10 @@ public class GameManager : MonoBehaviour
 
         IsSceneBeingLoaded = true;
         m_setSceneActiveCondition = new WaitUntil(() => SceneManager.GetSceneByBuildIndex(currentSceneIndex-1).isLoaded);
+        m_unloadedPreviousScene = new WaitUntil(() => !SceneManager.GetSceneByBuildIndex(currentSceneIndex).isLoaded);
         SceneManager.LoadSceneAsync(currentSceneIndex-1, LoadSceneMode.Additive);
         m_setSceneActive = StartCoroutine(SetSceneActive(SceneManager.GetSceneByBuildIndex(currentSceneIndex-1)));
+        yield return m_setSceneActiveCondition;
         SceneManager.UnloadSceneAsync(currentSceneIndex);
     }
 

@@ -74,6 +74,8 @@ public class TurnManager : MonoBehaviour
         if(m_unitTurn != null)
             StopCoroutine(m_unitTurn);
 
+        m_unitTurn = null;
+
         rawTurnQueue = new List<CharacterScript>();
         sortedTurnQueue = new List<CharacterScript>();
         turnOrderIndex = 0;

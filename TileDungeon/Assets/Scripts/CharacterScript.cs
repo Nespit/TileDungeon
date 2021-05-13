@@ -814,7 +814,7 @@ public class CharacterScript : MonoBehaviour
 
         yield return moveUp;
 
-        GameManager.instance.MoveToPreviousScene();
+        GameManager.instance.m_changeScene = StartCoroutine(GameManager.instance.MoveToPreviousScene());
 
         m_characterAnimation = StartCoroutine(EnterScene(false));
     }
@@ -826,7 +826,7 @@ public class CharacterScript : MonoBehaviour
         
         yield return moveDown;               
 
-        GameManager.instance.MoveToNextScene();  
+        GameManager.instance.m_changeScene = StartCoroutine(GameManager.instance.MoveToNextScene());  
 
         m_characterAnimation = StartCoroutine(EnterScene(true));
     }
@@ -834,6 +834,8 @@ public class CharacterScript : MonoBehaviour
     IEnumerator EnterScene(bool next)
     {
         yield return GameManager.instance.m_setSceneActiveCondition;
+        yield return GameManager.instance.m_unloadedPreviousScene;
+
         Transform target;
 
         if(next)
@@ -887,12 +889,8 @@ public class CharacterScript : MonoBehaviour
         {
             m_characterTurnCondition = new WaitUntil(() => turnActive == false);
             
-
-            if(transform.parent != null)
-            {
-                TileScript playerTile = transform.parent.GetComponent<TileScript>();
-                UIManager.instance.HighlightReachableTiles(playerTile, currentActionPoints);
-            }
+            TileScript playerTile = transform.parent.GetComponent<TileScript>();
+            UIManager.instance.HighlightReachableTiles(playerTile, currentActionPoints);
                
         }
         else if (gameObject.tag == "Enemy")

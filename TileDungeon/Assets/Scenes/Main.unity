@@ -2706,6 +2706,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4693479881931998199, guid: 89c83a007d68344dea0e003d4a998355,
         type: 3}
+      propertyPath: skipAnimations
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4693479881931998199, guid: 89c83a007d68344dea0e003d4a998355,
+        type: 3}
       propertyPath: winAnnouncement
       value: 
       objectReference: {fileID: 1827488530}

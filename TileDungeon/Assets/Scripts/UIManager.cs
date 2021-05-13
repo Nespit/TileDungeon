@@ -58,6 +58,9 @@ public class UIManager : MonoBehaviour
 
     public void HighlightReachableTiles(TileScript characterTile, int actionPoints)
     {
+        if(characterTile == null)
+            return;
+
         if(TileUIEvent != null)
         {
             TileUIEvent(null, null); //clears currently activated tiles
